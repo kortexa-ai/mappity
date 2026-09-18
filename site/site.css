@@ -198,10 +198,11 @@ q {
   background: var(--panel);
   border: 1px solid var(--line-strong);
   border-radius: 16px;
+  /* Neutral elevation only. The page has one light, behind the headline; the map brings its own. */
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.05) inset,
     0 30px 70px -20px rgba(0, 0, 0, 0.8),
-    0 60px 140px -50px rgba(255, 181, 71, 0.22);
+    0 70px 160px -60px rgba(0, 0, 0, 0.9);
 }
 
 .frame {
@@ -309,7 +310,8 @@ h2 {
 }
 
 .rail h3 {
-  font: 600 18px/1.4 var(--sans);
+  font: 500 22px/1.3 var(--sans); /* a real step above the 16px text under it, not weight alone */
+  letter-spacing: -0.005em;
 }
 
 .rail p {
