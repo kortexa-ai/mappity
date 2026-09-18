@@ -1,0 +1,756 @@
+:root {
+  --ink: #f4efe6;
+  --ink-soft: #bdb7ab;
+  --ink-faint: #918c82; /* 5.6:1 on the glass: the floor for placeholders and timings */
+  --night: #0b0d11;
+  --glass: rgba(13, 15, 20, 0.84);
+  --line: rgba(255, 255, 255, 0.09);
+  --line-strong: rgba(255, 255, 255, 0.2);
+  --glow: #ffb547;
+  --glow-ink: #1a1204; /* text on the glow colour */
+  --glow-soft: rgba(255, 181, 71, 0.18);
+  --good: #8fe3a0;
+  --warn: #ffc85a;
+  --bad: #ff9a94;
+  /* Caslon is what maps were engraved in; the italic is how cartographers have always lettered water.
+     The answer speaks in it. Everything you operate is Fira, which stays legible at 12px on a map. */
+  --display: "Libre Caslon Display", "Libre Caslon Text", "Iowan Old Style", Georgia, serif;
+  --serif: "Libre Caslon Text", "Iowan Old Style", Georgia, serif;
+  --sans: "Fira Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "Fira Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --radius: 14px;
+  --edge: 24px; /* distance from the window edge to every floating piece */
+  --rail: 320px; /* width of both side panels */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 20px 50px -12px rgba(0, 0, 0, 0.7);
+}
+
+/* The guessing game is the same room with the lights changed. */
+body[data-mode="game"] {
+  --glow: #4fd6e0;
+  --glow-ink: #04181a;
+  --glow-soft: rgba(79, 214, 224, 0.18);
+}
+
+* {
+  box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--night);
+  color: var(--ink);
+  font: 400 15px/1.45 var(--sans);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  caret-color: var(--glow);
+}
+
+::selection {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--glow) 38%, transparent);
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: 0;
+  background: none;
+  padding: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--glow);
+  outline-offset: 2px;
+}
+
+.mono {
+  font-family: var(--mono);
+  font-feature-settings: "tnum";
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+#map {
+  position: fixed;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 1.2s var(--ease);
+}
+
+body.ready #map {
+  opacity: 1;
+}
+
+/* Shade where words sit on the map: the left edge for the name and the timeline, the bottom for the
+   answer and the bar. The middle of the map, where the light is, stays untouched. */
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  z-index: 2;
+  pointer-events: none;
+}
+
+body::before {
+  inset: 0 auto 0 0;
+  width: 460px;
+  background: linear-gradient(90deg, rgba(11, 13, 17, 0.78), rgba(11, 13, 17, 0.45) 55%, transparent);
+}
+
+/* An ellipse under the bar, not a full-width band: the map credits in the corner must stay readable. */
+body::after {
+  inset: auto 0 0 0;
+  height: 320px;
+  background: radial-gradient(ellipse 36% 100% at 50% 100%, rgba(11, 13, 17, 0.94), rgba(11, 13, 17, 0.7) 50%, transparent 100%);
+}
+
+/* Brand ------------------------------------------------------------------------------------ */
+
+.brand {
+  position: fixed;
+  top: 20px;
+  left: var(--edge);
+  z-index: 3;
+  pointer-events: none;
+}
+
+.brand h1 {
+  margin: 0;
+  font: italic 400 34px/1 var(--serif);
+  letter-spacing: -0.01em;
+}
+
+.brand p {
+  margin: 7px 0 0;
+  color: var(--ink-soft);
+  font-size: 13.5px;
+}
+
+/* Panels: the timeline on the left, results or the game on the right ---------------------------- */
+
+.panel {
+  position: fixed;
+  top: 108px;
+  z-index: 3;
+  width: var(--rail);
+  max-height: calc(100vh - 108px - 230px);
+  overflow: auto;
+  padding: 16px 16px 14px;
+  background: var(--glass);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  backdrop-filter: blur(18px) saturate(1.25);
+  box-shadow: var(--shadow);
+  animation: arrive 0.6s var(--ease) both;
+}
+
+#how {
+  left: var(--edge);
+}
+
+#results,
+#game {
+  top: 20px;
+  right: 68px; /* clear of the zoom buttons */
+  max-height: calc(100vh - 20px - 230px);
+}
+
+.panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.panel h2 {
+  margin: 0;
+  font: 400 19px/1.25 var(--serif);
+}
+
+.ghost {
+  margin: -4px -6px;
+  padding: 4px 8px;
+  color: var(--ink-faint);
+  font-size: 13px;
+  border-radius: 7px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.ghost:hover {
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.note {
+  margin: 10px 2px 0;
+  color: var(--ink-faint);
+  font-size: 12.5px;
+}
+
+#results-list,
+#game-log,
+#trace {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* How it answered: one rail, one row per step. The dot says who spoke. */
+
+#trace {
+  position: relative;
+  margin-top: 4px;
+}
+
+#trace::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  bottom: 12px;
+  left: 3px;
+  width: 1px;
+  background: var(--line-strong);
+}
+
+.step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1px 10px;
+  padding: 6px 0 7px 20px;
+  font-size: 13px;
+  opacity: 0;
+  transform: translateY(5px);
+  transition: opacity 0.35s var(--ease), transform 0.35s var(--ease);
+}
+
+.step.in {
+  opacity: 1;
+  transform: none;
+}
+
+.step::before {
+  content: "";
+  position: absolute;
+  top: 12px;
+  left: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ink-faint);
+  box-shadow: 0 0 0 3px #0e1015; /* a gap in the rail, in the panel's own colour */
+}
+
+.step[data-who="Jev"]::before {
+  background: var(--glow);
+}
+
+.step[data-who="Needle"]::before {
+  background: var(--ink);
+}
+
+.step .who {
+  font-weight: 600;
+}
+
+.step .what {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  color: var(--ink-soft);
+  line-height: 1.4;
+}
+
+.step .took {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: baseline;
+  color: var(--ink-faint);
+  font-size: 11.5px;
+}
+
+.step[data-tone="good"] .what {
+  color: var(--good);
+}
+
+.step[data-tone="bad"] .what {
+  color: var(--bad);
+}
+
+.step[data-tone="warn"] .what {
+  color: var(--warn);
+}
+
+.step[data-tone="wait"] .what {
+  color: var(--ink-faint);
+  animation: breathe 1.6s ease-in-out infinite;
+}
+
+.step.struck .what {
+  color: var(--ink-faint);
+  text-decoration: line-through;
+  text-decoration-color: var(--bad);
+  text-decoration-thickness: 1.5px;
+}
+
+#bill {
+  margin: 10px 0 0;
+  padding-top: 10px;
+  color: var(--ink-soft);
+  font-size: 11.5px;
+  line-height: 1.6;
+  border-top: 1px solid var(--line);
+}
+
+/* Results */
+
+.result + .result {
+  border-top: 1px solid var(--line);
+}
+
+.result button {
+  display: block;
+  width: calc(100% + 16px);
+  margin: 0 -8px;
+  padding: 10px 8px;
+  text-align: left;
+  border-radius: 9px;
+  transition: background 0.15s;
+}
+
+.result button:hover,
+.result button:focus-visible {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.result-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.result .name {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.result .p {
+  color: var(--glow);
+  font-size: 13px;
+}
+
+.bar {
+  height: 3px;
+  margin: 7px 0 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.bar i {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--glow);
+  transform-origin: left;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  color: var(--ink-faint);
+  font-size: 12.5px;
+}
+
+.factors {
+  color: var(--ink-soft);
+  font-size: 11.5px;
+}
+
+.why {
+  color: var(--glow);
+}
+
+.meta .why::before,
+.card .why::before {
+  content: "because ";
+  color: var(--ink-faint);
+}
+
+/* Game */
+
+#game-log li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+  font-size: 13.5px;
+}
+
+#game-log .q {
+  color: var(--ink-soft);
+}
+
+#game-log .a {
+  font: italic 400 15px/1.3 var(--serif);
+  white-space: nowrap;
+}
+
+.game-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+  padding-top: 10px;
+  color: var(--ink-faint);
+  font-size: 12px;
+  border-top: 1px solid var(--line);
+}
+
+/* Console: the answer, the bar, things to try ---------------------------------------------------- */
+
+#console {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  z-index: 4;
+  width: min(760px, calc(100vw - 2 * var(--edge)));
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#verdict {
+  align-self: center;
+  max-width: 100%;
+  font: 400 38px/1.12 var(--display);
+  letter-spacing: -0.005em;
+  text-align: center;
+  text-wrap: balance;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.9);
+}
+
+#verdict[data-tone="good"] {
+  color: var(--good);
+}
+
+#verdict[data-tone="warn"] {
+  color: var(--warn);
+}
+
+#verdict[data-tone="bad"] {
+  color: var(--bad);
+}
+
+#verdict.pop {
+  animation: arrive 0.6s var(--ease) both;
+}
+
+#bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 7px 7px 22px;
+  background: var(--glass);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  backdrop-filter: blur(20px) saturate(1.25);
+  box-shadow: var(--shadow);
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+#bar:focus-within {
+  border-color: var(--glow);
+  box-shadow: var(--shadow), 0 0 0 4px var(--glow-soft);
+}
+
+#ask {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 0;
+  font-size: 18px;
+  background: none;
+  border: 0;
+  outline: 0;
+}
+
+#ask::placeholder {
+  color: var(--ink-faint);
+}
+
+#go {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  color: var(--glow-ink);
+  background: var(--glow);
+  border-radius: 50%;
+  transition: transform 0.2s var(--ease), filter 0.2s, background 0.4s;
+}
+
+#go:hover {
+  filter: brightness(1.1);
+  transform: scale(1.06);
+}
+
+#go:active {
+  transform: scale(0.96);
+}
+
+body.busy #go {
+  animation: working 0.9s ease-in-out infinite;
+}
+
+#ideas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+body.asked #ideas {
+  display: none;
+}
+
+.idea {
+  padding: 6px 12px;
+  color: var(--ink-soft);
+  font-size: 13px;
+  background: rgba(13, 15, 20, 0.66);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  backdrop-filter: blur(10px);
+  transition: color 0.15s, border-color 0.15s, transform 0.2s var(--ease);
+}
+
+.idea:hover {
+  color: var(--ink);
+  border-color: var(--line-strong);
+  transform: translateY(-1px);
+}
+
+/* On the map ------------------------------------------------------------------------------------- */
+
+.area-label {
+  padding: 3px 10px;
+  font-family: var(--sans); /* MapLibre sets its own font on everything inside the map */
+  margin-bottom: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  background: var(--glass);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  backdrop-filter: blur(10px);
+}
+
+.maplibregl-popup-content {
+  padding: 14px 16px;
+  color: var(--ink);
+  background: var(--glass);
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow);
+  font: 400 13.5px/1.45 var(--sans);
+}
+
+.maplibregl-popup-tip {
+  display: none;
+}
+
+.card h3 {
+  margin: 0;
+  font: 400 19px/1.25 var(--serif);
+}
+
+.card .kind {
+  margin: 2px 0 8px;
+  color: var(--ink-faint);
+}
+
+.card .score {
+  margin: 0 0 4px;
+  color: var(--glow);
+  font-size: 12.5px;
+}
+
+.card .why,
+.card .street {
+  margin: 0 0 8px;
+  font-size: 12.5px;
+}
+
+.card .street {
+  color: var(--ink-soft);
+}
+
+.card dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 12px;
+  margin: 8px 0 10px;
+  font-size: 12.5px;
+}
+
+.card dt {
+  color: var(--ink-faint);
+}
+
+.card dd {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card a {
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--line-strong);
+}
+
+.card a:hover {
+  color: var(--ink);
+  text-decoration-color: currentColor;
+}
+
+.card .primary {
+  width: 100%;
+  margin-top: 4px;
+  padding: 9px 12px;
+  color: var(--glow-ink);
+  font-weight: 600;
+  background: var(--glow);
+  border-radius: 9px;
+  transition: filter 0.15s;
+}
+
+.card .primary:hover {
+  filter: brightness(1.1);
+}
+
+.maplibregl-ctrl-group {
+  background: var(--glass);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow) !important;
+}
+
+.maplibregl-ctrl-group button + button {
+  border-top-color: var(--line);
+}
+
+.maplibregl-ctrl-group button .maplibregl-ctrl-icon {
+  filter: invert(1) brightness(0.85);
+}
+
+.maplibregl-ctrl-attrib {
+  background: rgba(11, 13, 17, 0.7) !important;
+  color: var(--ink-faint);
+  font-size: 10.5px;
+}
+
+.maplibregl-ctrl-attrib a {
+  color: var(--ink-soft);
+}
+
+.maplibregl-ctrl-attrib-button {
+  filter: invert(1);
+}
+
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(4px);
+  }
+}
+
+@keyframes working {
+  50% {
+    transform: scale(0.9);
+    filter: brightness(1.25);
+  }
+}
+
+@keyframes breathe {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* Phone: the map keeps the middle. Results become a short sheet under the name. ------------------ */
+
+@media (max-width: 900px) {
+  :root {
+    --edge: 14px;
+  }
+
+  body::before,
+  .brand p,
+  #how {
+    display: none;
+  }
+
+  .brand h1 {
+    font-size: 26px;
+  }
+
+  #results,
+  #game {
+    top: 64px;
+    right: var(--edge);
+    left: var(--edge);
+    width: auto;
+    max-height: 30vh;
+  }
+
+  #console {
+    bottom: 44px; /* the map credits sit underneath */
+  }
+
+  #verdict {
+    font-size: 25px;
+  }
+
+  #ask {
+    font-size: 16px; /* below 16px iOS zooms the page on focus */
+  }
+
+  .maplibregl-ctrl-top-right {
+    display: none; /* pinch to zoom */
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

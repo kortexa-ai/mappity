@@ -1,0 +1,23 @@
+[
+  {"id": "hello", "voice": "mira", "text": "Archibald, meet mappity. It's a map you can just talk to."},
+  {"id": "taxes", "voice": "archibald", "text": "A talking map. Marvellous. Does it also do my taxes?"},
+  {"id": "sugar", "voice": "mira", "text": "Watch. My kid is melting down, and needs sugar, immediately."},
+  {"id": "answered", "voice": "mira", "text": "Every place you see just answered, with a probability. Four hundred judgments, about a second, a fraction of a cent."},
+  {"id": "family", "voice": "archibald", "text": "Four hundred opinions in one second. Like my family, but useful."},
+  {"id": "overruled", "voice": "mira", "text": "On the left: Needle, a tiny local model, thought sugar was a landmark. Jev gave that one percent. Overruled."},
+  {"id": "homework", "voice": "archibald", "text": "They mark each other's homework. I approve."},
+  {"id": "aquarium", "voice": "mira", "text": "Next. Cozy coffee, within five minutes' walk of the aquarium."},
+  {"id": "division", "voice": "mira", "text": "Needle pulls out the aquarium, and the five minutes. Code does the geography. Jev decides what cozy means."},
+  {"id": "night", "voice": "mira", "text": "One that no category can answer. Somewhere I'd feel fine walking to, alone, at eleven at night."},
+  {"id": "street", "voice": "mira", "text": "Jev decided the street matters, so we asked Mapillary what its cameras saw. Each place is judged twice, itself and its street, and code multiplies the two."},
+  {"id": "lampposts", "voice": "archibald", "text": "So those little specks are actual lamp posts. Good heavens."},
+  {"id": "frivolous", "voice": "archibald", "text": "Very worthy. But can it do anything frivolous?"},
+  {"id": "game", "voice": "mira", "text": "Let's play a guessing game. It's now thinking of one of these sixty places."},
+  {"id": "eat", "voice": "mira", "text": "Can I eat there?"},
+  {"id": "odds", "voice": "mira", "text": "I only hear one answer. But every place answered, so the odds shift across the whole map. Does it serve alcohol?"},
+  {"id": "bayes", "voice": "archibald", "text": "Bayes' theorem, as a pub quiz. Stand back. I shall guess."},
+  {"id": "right", "voice": "archibald", "text": "Ha! First try. I should do this professionally."},
+  {"id": "wrong", "voice": "archibald", "text": "Hmph. I demand a recount."},
+  {"id": "credits", "voice": "mira", "text": "Open Street Map, Mapillary, TypeSafe Jev, and Cactus Needle. About a second per question. No chatbot anywhere."},
+  {"id": "tea", "voice": "archibald", "text": "Splendid. Now ask it where one finds a decent cup of tea."}
+]

@@ -1,0 +1,37 @@
+# Secrets. Keys live in .env; only the example is committed.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+credentials*.json
+
+# Dependencies
+node_modules/
+.venv/
+
+# Generated: caches of OSM and Mapillary data, and demo recordings (frames, narration takes)
+.cache/
+demo/out/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Tool state that holds local paths and session ids
+.impeccable/*.cache.json
+.claude/settings.local.json
+
+# OS and editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+
+# The built GitHub Pages site (scripts/build-site.sh)
+_site/

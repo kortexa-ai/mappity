@@ -1,0 +1,29 @@
+{
+  "name": "mappity",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Ask the map anything. Every place answers with a probability. OpenStreetMap + Mapillary + TypeSafe Jev + Cactus Needle.",
+  "type": "module",
+  "scripts": {
+    "start": "node --env-file=.env server/index.js",
+    "dev": "node --env-file=.env --watch server/index.js",
+    "test": "node --test tests/",
+    "demo:narrate": "node --env-file=.env demo/tts.mjs",
+    "demo:record": "node --env-file=.env demo/record.mjs",
+    "demo:assemble": "node --env-file=.env demo/assemble.mjs"
+  },
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/kortexa-ai/mappity.git" },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@mapbox/vector-tile": "^3.0.0",
+    "@typesafe-ai/sdk": "^0.6.0",
+    "maplibre-gl": "^6.10.0",
+    "pbf": "^5.1.2"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
+}

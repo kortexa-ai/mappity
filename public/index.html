@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>mappity</title>
+    <meta name="description" content="Ask the map anything. Every place answers with a probability." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;500&family=Fira+Sans:wght@400;500;600&family=Libre+Caslon+Display&family=Libre+Caslon+Text:ital,wght@0,400;1,400&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="vendor/maplibre-gl.css" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="map" aria-label="Map"></div>
+
+    <header class="brand">
+      <h1>mappity</h1>
+      <p>Ask the map anything. Every place answers.</p>
+    </header>
+
+    <aside id="results" class="panel" hidden aria-labelledby="results-title">
+      <div class="panel-head">
+        <h2 id="results-title">Best matches</h2>
+        <button id="results-close" class="ghost" type="button" aria-label="Clear results">Clear</button>
+      </div>
+      <ol id="results-list"></ol>
+      <p id="results-note" class="note"></p>
+    </aside>
+
+    <aside id="game" class="panel" hidden aria-labelledby="game-title">
+      <div class="panel-head">
+        <h2 id="game-title">I'm thinking of a place</h2>
+        <button id="game-exit" class="ghost" type="button">Leave</button>
+      </div>
+      <p class="note" id="game-intro">Ask yes or no questions. Every place on the map answers each one, and the odds shift. Click a place when you think you know.</p>
+      <ol id="game-log"></ol>
+      <div class="game-actions">
+        <span id="game-count" class="mono"></span>
+        <button id="game-giveup" class="ghost" type="button">Give up</button>
+      </div>
+    </aside>
+
+    <aside id="how" class="panel" hidden aria-labelledby="how-title">
+      <div class="panel-head">
+        <h2 id="how-title">How it answered</h2>
+      </div>
+      <ol id="trace"></ol>
+      <p id="bill" class="mono" hidden></p>
+    </aside>
+
+    <section id="console">
+      <div id="verdict" role="status" hidden></div>
+      <form id="bar" autocomplete="off">
+        <input id="ask" type="text" name="ask" placeholder="What do you need right now?" aria-label="Ask the map" spellcheck="false" enterkeyhint="go" />
+        <button id="go" type="submit" aria-label="Ask">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 12h13M12 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        </button>
+      </form>
+      <div id="ideas" aria-label="Things to try"></div>
+    </section>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>mappity: ask the map anything</title>
+    <meta name="description" content="Type what you need. Every place on the map answers with a probability, and the map glows where the answer is yes. OpenStreetMap, Mapillary, TypeSafe Jev and Cactus Needle. No chatbot anywhere." />
+    <meta property="og:title" content="mappity: ask the map anything" />
+    <meta property="og:description" content="Every place answers with a probability, and the map glows where the answer is yes." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://kortexa-ai.github.io/mappity/poster.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="color-scheme" content="dark" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b0d11'/%3E%3Ccircle cx='16' cy='16' r='11' fill='%23ffb547' opacity='.22'/%3E%3Ccircle cx='16' cy='16' r='5.5' fill='%23ffd98a'/%3E%3C/svg%3E" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;500&family=Fira+Sans:wght@400;500;600&family=Libre+Caslon+Display&family=Libre+Caslon+Text:ital,wght@0,400;1,400&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="site.css" />
+  </head>
+  <body>
+    <header class="top">
+      <a class="wordmark" href="./">mappity</a>
+      <nav aria-label="Project">
+        <a href="#film">The film</a>
+        <a href="#how">How it answers</a>
+        <a href="#measured">What we measured</a>
+        <a class="source" href="https://github.com/kortexa-ai/mappity">Source on GitHub</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <h1>Ask the map <em>anything.</em></h1>
+        <p class="lede">
+          Type what you need, the way you would say it. About a second later every place around you has answered
+          with a probability, and the map glows where the answer is yes. No categories, no filters, no search index,
+          and no chatbot anywhere.
+        </p>
+      </section>
+
+      <section class="stage" aria-labelledby="stage-title">
+        <div class="frame">
+          <iframe src="app/" title="mappity, playing back recorded answers" loading="eager" allow="fullscreen"></iframe>
+        </div>
+        <p class="caption">
+          <span id="stage-title">This is the real interface, playing back real answers</span> with their real timing: Pike Place Market, Seattle.
+          Pick one of the questions under the bar. <a href="app/">Open it full screen</a>, or
+          <a href="https://github.com/kortexa-ai/mappity#run-it">run it yourself</a> to ask your own.
+        </p>
+      </section>
+
+      <section id="film" class="film" aria-labelledby="film-title">
+        <div class="prose">
+          <h2 id="film-title">Two minutes, with Mira and Archibald</h2>
+          <p>
+            Mira shows it off. Archibald is unimpressed, then impressed, then loses a guessing game to a map.
+            Nothing on screen is staged: the recorder drives the real app, and the narration has a line for
+            either ending of the game.
+          </p>
+        </div>
+        <video controls preload="metadata" poster="poster.jpg" src="demos/mappity-demo.mp4"></video>
+      </section>
+
+      <section id="how" class="how" aria-labelledby="how-title">
+        <div class="prose">
+          <h2 id="how-title">How it answers</h2>
+          <p>
+            Two small models and ordinary code, each doing only what it is good at. The code owns the workflow;
+            the models only make narrow judgments.
+          </p>
+        </div>
+        <ol class="rail">
+          <li data-who="Needle">
+            <h3>Needle pulls out what code can act on</h3>
+            <p>A tiny local model turns <q>cozy coffee within 5 minutes walk of the aquarium</q> into <code>search_near("aquarium", 5)</code> in about 50 ms. It extracts names and numbers. It never sees the wish as a wish.</p>
+          </li>
+          <li data-who="Jev">
+            <h3>Jev checks Needle's homework</h3>
+            <p>One request decides what kind of sentence this is, whether the street outside matters, and whether each thing Needle extracted is really a place. <q>aquarium</q>: 92%. <q>sugar</q>: 1%, overruled.</p>
+          </li>
+          <li data-who="code">
+            <h3>Code does the geography</h3>
+            <p>Nominatim finds the aquarium. Five minutes becomes a radius. Overpass returns every place inside it, and when the street matters, Mapillary says what its cameras saw within 50 metres of each one.</p>
+          </li>
+          <li data-who="Jev">
+            <h3>Jev judges types, then places</h3>
+            <p>First one request about place types, so banks are not asked about ice cream. Then up to 300 places, each with its own question, in parallel. When the street matters each place is judged twice, itself and its street, and code multiplies the two.</p>
+          </li>
+          <li data-who="Jev">
+            <h3>Jev picks the reason</h3>
+            <p>Jev cannot write a sentence, but it can choose: of everything known about this place, which one fact explains the match? <q>because cuisine: coffee shop</q>.</p>
+          </li>
+        </ol>
+        <p class="sum mono">250 to 700 judgments · about a second · a fifth to half of a cent</p>
+      </section>
+
+      <section id="measured" class="measured" aria-labelledby="measured-title">
+        <div class="prose">
+          <h2 id="measured-title">What we measured, so you do not have to</h2>
+        </div>
+        <dl>
+          <div>
+            <dt>Do not index long arrays</dt>
+            <dd>Asking Jev about <code>places[i]</code> was right 100% of the time with 15 places in the state, 95% with 30, and 75% with 60. It has to count to the index. Keyed objects, <code>places.place_17</code>, stayed above 99% at every size.</dd>
+          </div>
+          <div>
+            <dt>Split a vague judgment in two</dt>
+            <dd><q>Somewhere I'd feel fine walking to alone at 11pm</q> scored every place about 0.8. Two narrow questions, the place and its street, gave a spread from 0.10 to 0.86 that follows the street lights.</dd>
+          </div>
+          <div>
+            <dt>Never hand Needle a free-text argument</dt>
+            <dd>It copies spans from the input. <q>My kid needs sugar</q> became <code>go_to("sugar")</code> at confidence 1.00. Let it extract, and let Jev verify: real places scored 0.89 and up, invented ones 0.06 and down.</dd>
+          </div>
+          <div>
+            <dt>Street detections measure camera traffic</dt>
+            <dd>The same lamp post is detected on every drive-by. Rank each street against its neighbours, in words, <q>lots</q>, <q>some</q>, <q>few</q>, <q>none seen</q>, and never send the counts.</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="run" aria-labelledby="run-title">
+        <div class="prose">
+          <h2 id="run-title">Run it</h2>
+          <p>
+            Node 22, a <a href="https://console.typesafe.ai/settings/keys">TypeSafe key</a>, and a
+            <a href="https://www.mapillary.com/dashboard/developers">Mapillary token</a>. OpenStreetMap needs no key.
+            With <a href="https://github.com/kortexa-ai/needle.server">needle.server</a> running next to it, the bar also understands <q>near the aquarium</q>.
+          </p>
+        </div>
+        <pre><code>git clone https://github.com/kortexa-ai/mappity.git
+cd mappity &amp;&amp; npm install
+cp .env.example .env    <span class="dim"># add your two keys</span>
+./run.sh                <span class="dim"># http://localhost:4321</span></code></pre>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        Places © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>.
+        Street detections © <a href="https://www.mapillary.com">Mapillary</a>.
+        Basemap by <a href="https://openfreemap.org">OpenFreeMap</a>.
+        Judgments by <a href="https://typesafe.ai">TypeSafe Jev</a>.
+        Extraction by <a href="https://cactuscompute.com/needle">Cactus Needle</a>.
+      </p>
+      <p>MIT licensed. Made by <a href="https://kortexa.ai">kortexa.ai</a>.</p>
+    </footer>
+  </body>
+</html>
