@@ -35,7 +35,7 @@ to Ballard".
 | | Does | Cannot |
 |---|---|---|
 | **[Cactus Needle](https://github.com/kortexa-ai/needle.server/blob/main/llms.txt)** (local, ~50 ms) | Pulls open-valued arguments out of a sentence: `search_near("aquarium", 5)` | Judge anything. It turned "needs sugar" into `go_to("sugar")` at confidence 1.00 |
-| **The judge** (hosted [TypeSafe Jev](https://docs.typesafe.ai) by default, or a self-hosted [Shingi 27B](../models.server/shingi-27b/README.md) via `JEV_PROVIDER=shingi`) | Answers typed questions with probabilities, hundreds at a time. Jev's are calibrated and ~200 ms per request; Shingi's are raw scores and a batched request takes tens of seconds on one RTX 4090 | Write text, count, do arithmetic, compare dates |
+| **The judge** (hosted [TypeSafe Jev](https://docs.typesafe.ai) by default, or a self-hosted [Shingi 27B](https://github.com/kortexa-ai/models.server/tree/main/shingi-27b) via `JEV_PROVIDER=shingi`) | Answers typed questions with probabilities, hundreds at a time. Jev's are calibrated and ~200 ms per request; Shingi's are raw scores and a batched request takes tens of seconds on one RTX 4090 | Write text, count, do arithmetic, compare dates |
 | **Code** | Geocoding, walking distance, fetching, combining scores | Understand what "cozy" means |
 
 One question travels like this (`server/pipeline.js`):
@@ -123,6 +123,6 @@ tests/               unit tests for the geometry (npm test)
 
 Places © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright) (ODbL). Street detections
 © [Mapillary](https://www.mapillary.com) (CC BY-SA). Basemap by [OpenFreeMap](https://openfreemap.org).
-Judgments by [TypeSafe Jev](https://typesafe.ai) (or your own [Shingi 27B](../models.server/shingi-27b/README.md)). Extraction by [Cactus Needle](https://cactuscompute.com/needle).
+Judgments by [TypeSafe Jev](https://typesafe.ai) (or your own [Shingi 27B](https://github.com/kortexa-ai/models.server/tree/main/shingi-27b)). Extraction by [Cactus Needle](https://cactuscompute.com/needle).
 
 [MIT](LICENSE) © kortexa.ai
