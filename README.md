@@ -13,12 +13,16 @@ shops around you light up. No categories, no filters, no search index, and no ch
 
 ```sh
 npm install
-cp .env.example .env    # add your two keys
+cp .env.example .env    # add your keys (or point JEV_PROVIDER at a local judge)
 ./run.sh                # http://localhost:4321
 ```
 
-You need Node 22 or newer, a [TypeSafe key](https://console.typesafe.ai/settings/keys) and a
-[Mapillary token](https://www.mapillary.com/dashboard/developers). OpenStreetMap needs no key. Every
+You need Node 22 or newer and a
+[Mapillary token](https://www.mapillary.com/dashboard/developers). OpenStreetMap needs no key. The
+judging model is either the hosted [TypeSafe Jev](https://docs.typesafe.ai) (default; needs a
+[TypeSafe key](https://console.typesafe.ai/settings/keys)) or a self-hosted Shingi 27B (no key, no
+per-token billing, tens of seconds per answer instead of about one second — set `JEV_PROVIDER=shingi`
+and `SHINGI_URL` in `.env` to point mappity at one). Every
 setting, including the addresses of the local servers, lives in `.env`; [`.env.example`](.env.example)
 documents them all.
 
@@ -31,7 +35,7 @@ to Ballard".
 | | Does | Cannot |
 |---|---|---|
 | **[Cactus Needle](https://github.com/kortexa-ai/needle.server/blob/main/llms.txt)** (local, ~50 ms) | Pulls open-valued arguments out of a sentence: `search_near("aquarium", 5)` | Judge anything. It turned "needs sugar" into `go_to("sugar")` at confidence 1.00 |
-| **[TypeSafe Jev](https://docs.typesafe.ai)** (cloud, ~200 ms) | Answers typed questions with calibrated probabilities, hundreds at a time | Write text, count, do arithmetic, compare dates |
+| **The judge** (hosted [TypeSafe Jev](https://docs.typesafe.ai) by default, or a self-hosted [Shingi 27B](../models.server/shingi-27b/README.md) via `JEV_PROVIDER=shingi`) | Answers typed questions with probabilities, hundreds at a time. Jev's are calibrated and ~200 ms per request; Shingi's are raw scores and a batched request takes tens of seconds on one RTX 4090 | Write text, count, do arithmetic, compare dates |
 | **Code** | Geocoding, walking distance, fetching, combining scores | Understand what "cozy" means |
 
 One question travels like this (`server/pipeline.js`):
@@ -48,7 +52,9 @@ One question travels like this (`server/pipeline.js`):
 7. **Jev** picks, for the best matches, the one known fact that explains the match. It cannot write a
    reason, but it can select one.
 
-A typical answer is 250 to 700 judgments, about one second, and a fifth to half of a cent.
+A typical answer is 250 to 700 judgments, about one second, and a fifth to half of a cent. (Those are
+Jev's numbers: the same answer through a local Shingi 27B costs nothing and takes about a minute —
+the batching was tuned for a cloud model with wide fan-out.)
 
 The **guessing game** (`server/game.js`) uses the same engine backwards. The map picks a secret place,
 you ask yes/no questions, and Jev answers each question for all sixty candidates at once. The secret's
@@ -102,7 +108,7 @@ a time. The cache lives in `.cache/`.
 server/index.js      HTTP server, static files, NDJSON streaming
 server/pipeline.js   the question pipeline described above
 server/game.js       the guessing game
-server/jev.js        TypeSafe client      server/needle.js     needle.server client
+server/jev.js        judging-model client (Jev or Shingi)   server/needle.js     needle.server client
 server/osm.js        Overpass, Nominatim  server/mapillary.js  street detections
 public/              the web client: MapLibre GL, no build step
 site/                the GitHub Pages landing page and the recorded answers it plays back
@@ -117,6 +123,6 @@ tests/               unit tests for the geometry (npm test)
 
 Places © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright) (ODbL). Street detections
 © [Mapillary](https://www.mapillary.com) (CC BY-SA). Basemap by [OpenFreeMap](https://openfreemap.org).
-Judgments by [TypeSafe Jev](https://typesafe.ai). Extraction by [Cactus Needle](https://cactuscompute.com/needle).
+Judgments by [TypeSafe Jev](https://typesafe.ai) (or your own [Shingi 27B](../models.server/shingi-27b/README.md)). Extraction by [Cactus Needle](https://cactuscompute.com/needle).
 
 [MIT](LICENSE) © kortexa.ai

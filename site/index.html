@@ -122,7 +122,7 @@
         <div class="prose">
           <h2 id="run-title">Run it</h2>
           <p>
-            Node 22, a <a href="https://console.typesafe.ai/settings/keys">TypeSafe key</a>, and a
+            Node 22, a <a href="https://console.typesafe.ai/settings/keys">TypeSafe key</a> — or no key at all, with a self-hosted <a href="https://github.com/kortexa-ai/models.server">Shingi 27B</a> behind it (<code>JEV_PROVIDER=shingi</code> in <code>.env</code>: no per-token cost, tens of seconds per answer instead of about one second) — and a
             <a href="https://www.mapillary.com/dashboard/developers">Mapillary token</a>. OpenStreetMap needs no key.
             With <a href="https://github.com/kortexa-ai/needle.server">needle.server</a> running next to it, the bar also understands <q>near the aquarium</q>.
           </p>
@@ -139,7 +139,7 @@ cp .env.example .env    <span class="dim"># add your two keys</span>
         Places © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>.
         Street detections © <a href="https://www.mapillary.com">Mapillary</a>.
         Basemap by <a href="https://openfreemap.org">OpenFreeMap</a>.
-        Judgments by <a href="https://typesafe.ai">TypeSafe Jev</a>.
+        Judgments by <a href="https://typesafe.ai">TypeSafe Jev</a> (or your own Shingi 27B).
         Extraction by <a href="https://cactuscompute.com/needle">Cactus Needle</a>.
       </p>
       <p>MIT licensed. Made by <a href="https://kortexa.ai">kortexa.ai</a>.</p>
