@@ -1,16 +1,17 @@
 // Twenty questions with a neighbourhood. The map picks a secret place; you ask yes/no questions in
-// plain words. Jev answers the question for EVERY place at once, so one question does two jobs:
+// plain words. The judge answers for EVERY place, so one question does two jobs:
 // the secret place's answer is what you hear, and everyone's answers update the odds on the map.
-// Jev's nouls are calibrated probabilities, so they can be used as likelihoods directly.
+// These probabilities supply heuristic likelihoods; their calibration affects the game's odds.
 
 import { randomUUID } from "node:crypto";
 import * as jev from "./jev.js";
+import { gameRequest, askableQuestion, mapBatches } from "./judge-batches.js";
 import { nearest, placesIn } from "./osm.js";
 import { bboxAround } from "./geo.js";
 
 const games = new Map();
 const CANDIDATES = 60;
-const BATCH = 60;
+const BATCH = jev.provider === "shingi" ? 1 : 60;
 
 const pretty = (kind) => kind.replaceAll("_", " ");
 
@@ -38,37 +39,27 @@ export async function ask(id, question) {
   if (!game) throw new Error("That game is over. Start a new one.");
   const started = performance.now();
 
-  const batches = [];
-  for (let i = 0; i < game.places.length; i += BATCH) batches.push(game.places.slice(i, i + BATCH));
-  const results = await Promise.all(
-    batches.map((batch, b) =>
-      jev.ask(
-        // Keyed, not an array: Jev miscounts long arrays (measured in pipeline.js).
-        { question, places: Object.fromEntries(batch.map((p, i) => [`place_${i}`, { name: p.name, ...p.tags }])) },
-        {
-          ...Object.fromEntries(
-            batch.map((_, i) => [
-              `p${i}`,
-              jev.noul(
-                `Someone asks \`question\` about \`places.place_${i}\`. Is the honest answer yes?`,
-                "Yes, judging by what kind of place it is and what is known about it",
-                "No, or very unlikely",
-              ),
-            ]),
-          ),
-          // Speculative: asked once, alongside the first batch, and costs no extra time.
-          ...(b === 0 ? { askable: jev.noul("Is `question` a yes/no question that a person could ask about a place?") } : {}),
-        },
-      ),
-    ),
-  );
+  // A local worker must not judge every candidate before rejecting an invalid question.
+  // Hosted Jev can keep the speculative question in its first parallel batch.
+  const local = jev.provider === "shingi";
+  const gate = local ? await jev.ask({ question }, { askable: askableQuestion() }) : null;
+  if (gate && gate.answers.askable.noul < 0.4) return {
+    askable: false, ms: performance.now() - started, tokens: gate.tokens, usd: gate.usd,
+    requests: 1, judgments: 1,
+  };
+  const results = await mapBatches(game.places, BATCH, async (batch, b) => {
+    // Keyed, not an array: Jev miscounts long arrays (measured in pipeline.js).
+    const { state, questions } = gameRequest(question, batch, !local && b === 0);
+    return jev.ask(state, questions);
+  }, local);
 
-  const tokens = results.reduce((sum, r) => sum + r.tokens, 0);
-  const usd = results.reduce((sum, r) => sum + r.usd, 0);
-  const usage = { ms: performance.now() - started, tokens, usd, requests: results.length, judgments: game.places.length + 1 };
-  if (results[0].answers.askable.noul < 0.4) return { askable: false, ...usage };
+  const billed = gate ? [gate, ...results] : results;
+  const tokens = billed.reduce((sum, r) => sum + r.tokens, 0);
+  const usd = billed.reduce((sum, r) => sum + r.usd, 0);
+  const usage = { ms: performance.now() - started, tokens, usd, requests: billed.length, judgments: game.places.length + 1 };
+  if (!gate && results[0].answers.askable.noul < 0.4) return { askable: false, ...usage };
 
-  const answers = results.flatMap((r, b) => batches[b].map((_, i) => r.answers[`p${i}`].noul));
+  const answers = results.flatMap((r, b) => game.places.slice(b * BATCH, (b + 1) * BATCH).map((_, i) => r.answers[`p${i}`].noul));
   const truth = answers[game.places.indexOf(game.secret)];
 
   // Bayes: P(place | answer) is proportional to P(answer | place) x P(place). A murky answer updates nothing.

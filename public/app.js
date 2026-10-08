@@ -391,8 +391,8 @@ function handle(event, text) {
     }
     case "route": {
       const kind = { wish: "a wish", map_command: "a map command", play_game: "wants to play", off_topic: "not about places" }[event.kind];
-      traceStep("route", "Jev", `${kind}${event.street >= 0.65 ? ", and the street matters" : ""}`, event.ms);
-      for (const v of event.verified) traceStep(`claim:${v.value}`, "Jev", `“${v.value}” ${v.ok ? "is a place" : "is not a place"} · ${percent(v.p)}`, null, v.ok ? "good" : "bad");
+      traceStep("route", "Judge", `${kind}${event.street >= 0.65 ? ", and the street matters" : ""}`, event.ms);
+      for (const v of event.verified) traceStep(`claim:${v.value}`, "Judge", `“${v.value}” ${v.ok ? "is a place" : "is not a place"} · ${percent(v.p)}`, null, v.ok ? "good" : "bad");
       if (event.verified.some((v) => !v.ok)) traceSteps.get("needle")?.classList.add("struck");
       break;
     }
@@ -433,12 +433,12 @@ function handle(event, text) {
       });
       break;
     case "kinds":
-      traceStep("kinds", "Jev", `types first: ${event.kinds.slice(0, 3).map((k) => `${k.kind.replaceAll("_", " ")} ${percent(k.p)}`).join(" · ")}`, event.ms);
+      traceStep("kinds", "Judge", `types first: ${event.kinds.slice(0, 3).map((k) => `${k.kind.replaceAll("_", " ")} ${percent(k.p)}`).join(" · ")}`, event.ms);
       break;
     case "judge":
       judgedCount += event.scores.length;
       judgeMs = Math.max(judgeMs, event.ms);
-      traceStep("judge", "Jev", event.scores[0]?.[2] ? `${judgedCount} places judged twice: the place, and its street` : `${judgedCount} places judged, one by one`, judgeMs);
+      traceStep("judge", "Judge", event.scores[0]?.[2] ? `${judgedCount} places judged twice: the place, and its street` : `${judgedCount} places judged, one by one`, judgeMs);
       for (const [id, p, factors] of event.scores) setTarget(id, p, 1, factors);
       renderResults();
       break;
@@ -607,7 +607,7 @@ async function askGame(question) {
   try {
     const answer = await post("api/game/ask", { id: game.id, question });
     resetTrace();
-    traceStep("game", "Jev", `asked all ${places.size} places that question`, answer.ms);
+    traceStep("game", "Judge", answer.askable ? `asked all ${places.size} places that question` : "this needs a yes/no question", answer.ms);
     const bill = $("bill");
     bill.hidden = false;
     bill.textContent = `${answer.judgments} judgments · ${answer.tokens.toLocaleString()} tokens · ${usd(answer.usd)} · ${ms(answer.ms)}`;

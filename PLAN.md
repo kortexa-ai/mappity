@@ -12,7 +12,9 @@ Jev, or self-hosted Shingi 27B via `JEV_PROVIDER` in `.env`) and Cactus Needle.
 - The guessing game, with Bayesian odds on the map.
 - Web client: MapLibre GL on OpenFreeMap's dark style, no build step.
 - Provider switch: `JEV_PROVIDER=jev|shingi` in `.env`; Shingi answers the same `/v1/systemone`
-  contract, locally on one RTX 4090, with raw (uncalibrated) probabilities.
+  contract, locally on one RTX 4090. Place judgments use isolated place contexts and
+  serial requests; the game checks question validity before judging places. Hosted
+  Jev retains its parallel batches.
 
 ## Next, if this goes anywhere
 
@@ -22,10 +24,10 @@ Jev, or self-hosted Shingi 27B via `JEV_PROVIDER` in `.env`) and Cactus Needle.
 - **Walks by feel**: score street segments the way places are scored now, then route through the glow.
 - **Open now**: needs an `opening_hours` parser in code. The judge must not compare times.
 - **Photos**: Mapillary image ids come from the vector tiles (`/images?bbox=` fails in dense areas).
-- A reviewed threshold for `STREET_MATTERS` and `KIND_FLOOR`; both were set by eye on a few wishes,
-  against Jev's calibrated probabilities. Shingi's scores compress toward the ends (a cold-cache
-  "hot drink" wish put seven cafes in the 0.95-0.97 band), and `explain()` filters on its own
-  reported confidence, which is uncalibrated on Shingi — re-check both before trusting a Shingi answer.
+- Validate `STREET_MATTERS`, `KIND_FLOOR`, explanation confidence and the game's separate
+  question-validity gate on their own labeled examples. The current Shingi identity calibration
+  has no mappity-specific validation. A place-fit calibration cannot establish the quality of
+  these other roles; do not transfer the exploratory place-type bias to them.
 
 ## Known rough edges
 
@@ -34,6 +36,8 @@ Jev, or self-hosted Shingi 27B via `JEV_PROVIDER` in `.env`) and Cactus Needle.
 - Street context says "none seen" both for empty streets and for streets no one has photographed.
 - English only. The judging model's other languages are weaker, and Needle's tool descriptions are
   English.
-- Shingi's one GPU worker answers the questions of a request one by one, and the server's parallel
-  batches queue behind each other: a full search takes minutes, not the ~1 second that the batching
-  was tuned for. Fine for a hobbyist without a Jev key; not a demo path.
+- Shingi's current native worker serializes inference. Prefix reuse is enabled, but sequence
+  restoration and the remaining question evaluation still cost time. Larger shared place
+  contexts can change answers as well as latency. The fixed-workload checks in
+  `experiments/shingi-performance.mjs` cover both; shared-weight parallel serving remains
+  separate engine work, not a property of the current HTTP client.

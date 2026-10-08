@@ -1,12 +1,13 @@
 // One sentence in, a glowing map out. Code owns the workflow; the models only make small judgments.
 //
 //   Needle  pulls out what code can act on:  go_to("Ballard"), search_near("aquarium", 5 min)
-//   Jev     decides what kind of request it is, and checks that Needle's places are really places
+//   judge   decides what kind of request it is, and checks that Needle's places are really places
 //   code    geocodes, measures walking distance, fetches OSM places and Mapillary street detections
-//   Jev     judges place types first (coarse), then every surviving place (fine), in parallel batches
-//   Jev     picks, for the best matches, the one fact that explains the match (select, never generate)
+//   judge   scores place types first (coarse), then places (fine), with provider-specific batching
+//   judge   picks, for the best matches, the one fact that explains the match (select, never generate)
 
 import * as jev from "./jev.js";
+import { placeRequest, mapBatches } from "./judge-batches.js";
 import * as needle from "./needle.js";
 import { geocode, nearest, placesIn } from "./osm.js";
 import { streetContext } from "./mapillary.js";
@@ -15,7 +16,7 @@ import { bboxAround, haversine, walkRadius } from "./geo.js";
 const MAX_RADIUS_M = 1500;
 const MAX_SHOWN = 1500; // places drawn on the map
 const MAX_JUDGED = 300; // places that get their own judgment
-const BATCH = 50; // places per Jev request; every question in a request runs in parallel
+const BATCH = jev.provider === "shingi" ? 1 : 50; // Shingi judges each place with only its own context.
 const KIND_FLOOR = 0.1; // a place type below this cannot satisfy the wish: skip its places
 const EXPLAIN_TOP = 6;
 const STREET_MATTERS = 0.65; // how sure Jev must be that the wish is about the street before we read Mapillary
@@ -133,52 +134,19 @@ async function judgeKinds(wish, places, emit) {
  * and code combines them. Each half is narrow enough to answer well, and the result can be explained.
  */
 async function judgePlaces(wish, places, contexts, emit) {
-  const batches = [];
-  for (let i = 0; i < places.length; i += BATCH) batches.push(places.slice(i, i + BATCH));
-
-  return Promise.all(
-    batches.map(async (batch) => {
-      const state = {
-        wish,
-        // Keyed, not an array. Measured on 240 places: `places[i]` is 100% right at 15 per request,
-        // 95% at 30 and 75% at 60, because Jev has to count to the index. `places.place_i` stays at 99%+.
-        places: Object.fromEntries(
-          batch.map((p, i) => [`place_${i}`, { name: p.name, ...p.tags, ...(contexts ? { street_view: contexts.get(p.id) } : {}) }]),
-        ),
-      };
-      const questions = {};
-      batch.forEach((_, i) => {
-        if (!contexts) {
-          questions[`p${i}`] = jev.noul(
-            `Would \`places.place_${i}\` be a good place to go for someone whose wish is \`wish\`? Ignore any part of the wish about location, distance or walking time: that is already handled.`,
-            "The place plausibly satisfies the wish",
-            "The place does not offer what the wish asks for",
-          );
-          return;
-        }
-        questions[`fit${i}`] = jev.noul(
-          `Leave the street outside aside. Is \`places.place_${i}\` itself the kind of place that suits someone whose wish is \`wish\`?`,
-          "The place itself, by its type and details, suits the wish",
-          "The place itself does not suit the wish",
-        );
-        questions[`street${i}`] = jev.noul(
-          `\`places.place_${i}.street_view\` lists what street-level photos show within 50 metres. Does that street suit someone whose wish is \`wish\`?`,
-          "The street surroundings clearly help with the wish",
-          "The street surroundings do not help, or work against the wish",
-        );
-      });
-
-      const asked = await jev.ask(state, questions);
-      const scores = batch.map((p, i) => {
-        if (!contexts) return [p.id, asked.answers[`p${i}`].noul];
-        const fit = asked.answers[`fit${i}`].noul;
-        const street = asked.answers[`street${i}`].noul;
-        return [p.id, Math.sqrt(fit * street), { fit, street }]; // geometric mean: both halves have to hold
-      });
-      emit({ step: "judge", ms: asked.ms, tokens: asked.tokens, usd: asked.usd, scores, questions: Object.keys(questions).length });
-      return { scores, usage: asked, questions: Object.keys(questions).length };
-    }),
-  );
+  const started = performance.now();
+  return mapBatches(places, BATCH, async (batch) => {
+    const { state, questions } = placeRequest(wish, batch, contexts);
+    const asked = await jev.ask(state, questions);
+    const scores = batch.map((p, i) => {
+      if (!contexts) return [p.id, asked.answers[`p${i}`].noul];
+      const fit = asked.answers[`fit${i}`].noul;
+      const street = asked.answers[`street${i}`].noul;
+      return [p.id, Math.sqrt(fit * street), { fit, street }]; // geometric mean: both halves have to hold
+    });
+    emit({ step: "judge", ms: performance.now() - started, requestMs: asked.ms, tokens: asked.tokens, usd: asked.usd, scores, questions: Object.keys(questions).length });
+    return { scores, usage: asked, questions: Object.keys(questions).length };
+  }, jev.provider === "shingi");
 }
 
 /** Jev cannot write a reason, but it can select one: which known fact best explains the match? */

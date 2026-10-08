@@ -21,7 +21,7 @@ You need Node 22 or newer and a
 [Mapillary token](https://www.mapillary.com/dashboard/developers). OpenStreetMap needs no key. The
 judging model is either the hosted [TypeSafe Jev](https://docs.typesafe.ai) (default; needs a
 [TypeSafe key](https://console.typesafe.ai/settings/keys)) or a self-hosted Shingi 27B (no key, no
-per-token billing, tens of seconds per answer instead of about one second — set `JEV_PROVIDER=shingi`
+per-token billing — set `JEV_PROVIDER=shingi`
 and `SHINGI_URL` in `.env` to point mappity at one). Every
 setting, including the addresses of the local servers, lives in `.env`; [`.env.example`](.env.example)
 documents them all.
@@ -35,29 +35,34 @@ to Ballard".
 | | Does | Cannot |
 |---|---|---|
 | **[Cactus Needle](https://github.com/kortexa-ai/needle.server/blob/main/llms.txt)** (local, ~50 ms) | Pulls open-valued arguments out of a sentence: `search_near("aquarium", 5)` | Judge anything. It turned "needs sugar" into `go_to("sugar")` at confidence 1.00 |
-| **The judge** (hosted [TypeSafe Jev](https://docs.typesafe.ai) by default, or a self-hosted [Shingi 27B](https://github.com/kortexa-ai/models.server/tree/main/shingi-27b) via `JEV_PROVIDER=shingi`) | Answers typed questions with probabilities, hundreds at a time. Jev's are calibrated and ~200 ms per request; Shingi's are raw scores and a batched request takes tens of seconds on one RTX 4090 | Write text, count, do arithmetic, compare dates |
+| **The judge** (hosted [TypeSafe Jev](https://docs.typesafe.ai) by default, or a self-hosted [Shingi 27B](https://github.com/kortexa-ai/shingi-27b) via `JEV_PROVIDER=shingi`) | Answers typed questions with probabilities. Jev supports wide parallel batches; mappity gives the current Shingi worker one place at a time. Shingi's calibration is not validated for this app | Write text, count, do arithmetic, compare dates |
 | **Code** | Geocoding, walking distance, fetching, combining scores | Understand what "cozy" means |
 
 One question travels like this (`server/pipeline.js`):
 
 1. **Needle** extracts commands and hard constraints.
-2. **Jev**, one request: what kind of request is this, does the street matter, and is each thing Needle
+2. **The judge**, one request: what kind of request is this, does the street matter, and is each thing Needle
    extracted really a place? ("sugar": 1%. "aquarium": 92%.)
 3. **Code** geocodes the landmark with Nominatim and turns walking minutes into a radius.
 4. **Code** fetches the places from OpenStreetMap (Overpass), and, when the street matters, what
    Mapillary's cameras saw within 50 m of each place: street lights, benches, crossings, cameras.
-5. **Jev** judges place *types* first, in one request, so that only plausible places get their own question.
-6. **Jev** judges up to 300 places in parallel batches. When the street matters each place gets two
-   narrow questions, the place and its street, and code multiplies them.
-7. **Jev** picks, for the best matches, the one known fact that explains the match. It cannot write a
+5. **The judge** judges place *types* first, in one request, so that only plausible places get their own question.
+6. **The judge** scores up to 300 places: parallel batches for Jev, one place per serial request for
+   Shingi. When the street matters each place gets two narrow questions, the place and its street,
+   and code takes their geometric mean.
+7. **The judge** picks, for the best matches, the one known fact that explains the match. It cannot write a
    reason, but it can select one.
 
 A typical answer is 250 to 700 judgments, about one second, and a fifth to half of a cent. (Those are
-Jev's numbers: the same answer through a local Shingi 27B costs nothing and takes about a minute —
-the batching was tuned for a cloud model with wide fan-out.)
+Jev's numbers.) Shingi has no per-token API charge but large searches take longer. The local path
+uses small, isolated place contexts because large shared batches were slower and less accurate on
+explicit-fact controls. See [the reproducible performance checks](experiments/README.md) for the
+workloads, measurements and limits. `GET /v1/version` on Shingi reports its deployed calibration;
+the exploratory calibration from place-type labels is not used here.
 
 The **guessing game** (`server/game.js`) uses the same engine backwards. The map picks a secret place,
-you ask yes/no questions, and Jev answers each question for all sixty candidates at once. The secret's
+you ask yes/no questions, and the judge answers for all sixty candidates. Shingi first checks whether
+the question is a valid yes/no question; Jev includes that check in its first batch. The secret's
 answer is what you hear; everyone's answers are Bayesian likelihoods, and the map dims accordingly.
 
 ## Things we measured, so you do not have to
@@ -116,13 +121,13 @@ demos/               the demo film
 demo/                how the film is made: narration, recorder, and assembly
 experiments/         the measurements behind "Things we measured"; run with node --env-file=.env
 scripts/ask.sh       ask the running server a question from the terminal and print each pipeline step
-tests/               unit tests for the geometry (npm test)
+tests/               geometry, provider, launcher, batching and game regression tests (npm test)
 ```
 
 ## Credits and license
 
 Places © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright) (ODbL). Street detections
 © [Mapillary](https://www.mapillary.com) (CC BY-SA). Basemap by [OpenFreeMap](https://openfreemap.org).
-Judgments by [TypeSafe Jev](https://typesafe.ai) (or your own [Shingi 27B](https://github.com/kortexa-ai/models.server/tree/main/shingi-27b)). Extraction by [Cactus Needle](https://cactuscompute.com/needle).
+Judgments by [TypeSafe Jev](https://typesafe.ai) (or your own [Shingi 27B](https://github.com/kortexa-ai/shingi-27b)). Extraction by [Cactus Needle](https://cactuscompute.com/needle).
 
 [MIT](LICENSE) © kortexa.ai

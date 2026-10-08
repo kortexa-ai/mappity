@@ -84,7 +84,7 @@
           </li>
           <li data-who="Jev">
             <h3>Jev judges types, then places</h3>
-            <p>First one request about place types, so banks are not asked about ice cream. Then up to 300 places, each with its own question, in parallel. When the street matters each place is judged twice, itself and its street, and code multiplies the two.</p>
+            <p>First one request about place types, so banks are not asked about ice cream. Then up to 300 places, each with its own question, in parallel. When the street matters each place is judged twice, itself and its street, and code combines the two.</p>
           </li>
           <li data-who="Jev">
             <h3>Jev picks the reason</h3>
@@ -122,14 +122,14 @@
         <div class="prose">
           <h2 id="run-title">Run it</h2>
           <p>
-            Node 22, a <a href="https://console.typesafe.ai/settings/keys">TypeSafe key</a> — or no key at all, with a self-hosted <a href="https://github.com/kortexa-ai/models.server">Shingi 27B</a> behind it (<code>JEV_PROVIDER=shingi</code> in <code>.env</code>: no per-token cost, tens of seconds per answer instead of about one second) — and a
+            Node 22, a <a href="https://console.typesafe.ai/settings/keys">TypeSafe key</a> or a self-hosted <a href="https://github.com/kortexa-ai/shingi-27b">Shingi 27B</a> (<code>JEV_PROVIDER=shingi</code> in <code>.env</code>; no per-token API charge, with longer waits for large searches), and a
             <a href="https://www.mapillary.com/dashboard/developers">Mapillary token</a>. OpenStreetMap needs no key.
             With <a href="https://github.com/kortexa-ai/needle.server">needle.server</a> running next to it, the bar also understands <q>near the aquarium</q>.
           </p>
         </div>
         <pre><code>git clone https://github.com/kortexa-ai/mappity.git
 cd mappity &amp;&amp; npm install
-cp .env.example .env    <span class="dim"># add your two keys</span>
+cp .env.example .env    <span class="dim"># configure your judge and Mapillary token</span>
 ./run.sh                <span class="dim"># http://localhost:4321</span></code></pre>
       </section>
     </main>

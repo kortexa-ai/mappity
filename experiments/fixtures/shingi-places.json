@@ -1,0 +1,792 @@
+{
+  "provenance": {
+    "source": "Existing mappity OSM cache, already cleaned by server/osm.js; selected deterministically by distance to Pike Place, ten each of five kinds, interleaved.",
+    "attribution": "OpenStreetMap contributors; ODbL, https://www.openstreetmap.org/copyright",
+    "frozen": "2026-10-08",
+    "limits": "Diagnostic sample, not a representative calibration corpus. Real-place search has no ground truth. Game labels test the explicit amenity tag. Synthetic controls state the relevant facts explicitly."
+  },
+  "places": [
+    {
+      "id": "node/2397461017",
+      "name": "Starbucks",
+      "kind": "cafe",
+      "tags": {
+        "amenity": "cafe",
+        "brand": "Starbucks",
+        "cuisine": "coffee_shop",
+        "internet_access": "yes",
+        "internet_access:fee": "yes",
+        "opening_hours": "Mo-Su 06:00-20:00",
+        "smoking": "no",
+        "takeaway": "yes"
+      }
+    },
+    {
+      "id": "node/1701242984",
+      "name": "Chase",
+      "kind": "atm",
+      "tags": {
+        "amenity": "atm",
+        "brand": "Chase",
+        "drive_through": "no",
+        "operator": "Chase"
+      }
+    },
+    {
+      "id": "node/2397493591",
+      "name": "BECU",
+      "kind": "bank",
+      "tags": {
+        "amenity": "bank",
+        "brand": "BECU",
+        "opening_hours": "Mo-Fr 09:00-18:00; Sa 09:00-13:00; Su off"
+      }
+    },
+    {
+      "id": "node/2327716514",
+      "name": "Omni Dental",
+      "kind": "dentist",
+      "tags": {
+        "amenity": "dentist",
+        "healthcare": "dentist"
+      }
+    },
+    {
+      "id": "node/2397461002",
+      "name": "Post Alley Kids",
+      "kind": "clothes",
+      "tags": {
+        "shop": "clothes"
+      }
+    },
+    {
+      "id": "node/2397461014",
+      "name": "Perennial Tea Room",
+      "kind": "cafe",
+      "tags": {
+        "amenity": "cafe",
+        "cuisine": "tea",
+        "diet:vegetarian": "yes"
+      }
+    },
+    {
+      "id": "node/2549172553",
+      "name": "Wells Fargo",
+      "kind": "atm",
+      "tags": {
+        "amenity": "atm",
+        "brand": "Wells Fargo",
+        "opening_hours": "Mo-Su 06:00-22:00",
+        "operator": "Wells Fargo"
+      }
+    },
+    {
+      "id": "node/11663016263",
+      "name": "Wells Fargo",
+      "kind": "bank",
+      "tags": {
+        "amenity": "bank",
+        "brand": "Wells Fargo"
+      }
+    },
+    {
+      "id": "node/4544123298",
+      "name": "Seattle Dental Associates",
+      "kind": "dentist",
+      "tags": {
+        "amenity": "dentist",
+        "healthcare": "dentist"
+      }
+    },
+    {
+      "id": "node/4137555552",
+      "name": "Beyond Threads",
+      "kind": "clothes",
+      "tags": {
+        "shop": "clothes"
+      }
+    },
+    {
+      "id": "node/2397497115",
+      "name": "Lands of Origin",
+      "kind": "cafe",
+      "tags": {
+        "amenity": "cafe",
+        "cuisine": "coffee_shop"
+      }
+    },
+    {
+      "id": "node/3675688659",
+      "name": "Chase",
+      "kind": "atm",
+      "tags": {
+        "amenity": "atm",
+        "brand": "Chase",
+        "cash_in": "no",
+        "operator": "Chase"
+      }
+    },
+    {
+      "id": "node/3942806457",
+      "name": "Chase",
+      "kind": "bank",
+      "tags": {
+        "amenity": "bank",
+        "atm": "yes",
+        "brand": "Chase",
+        "opening_hours": "Mo-Fr 09:00-17:00; Sa-Su off"
+      }
+    },
+    {
+      "id": "node/12776982945",
+      "name": "Moritis & Shin Dentistry",
+      "kind": "dentist",
+      "tags": {
+        "amenity": "dentist",
+        "healthcare": "dentist",
+        "opening_hours": "Mo-Th 07:30-15:30",
+        "operator": "Dr. Hyunjung Shin, DDS"
+      }
+    },
+    {
+      "id": "node/2169291734",
+      "name": "Zebraclub Stores",
+      "kind": "clothes",
+      "tags": {
+        "opening_hours": "Mo-Sa 10:00-19:00; Su 11:00-18:00",
+        "shop": "clothes"
+      }
+    },
+    {
+      "id": "node/2397497111",
+      "name": "The Juice Emporium",
+      "kind": "cafe",
+      "tags": {
+        "amenity": "cafe"
+      }
+    },
+    {
+      "id": "node/3994235057",
+      "name": "Wells Fargo",
+      "kind": "atm",
+      "tags": {
+        "amenity": "atm",
+        "brand": "Wells Fargo",
+        "operator": "Wells Fargo"
+      }
+    },
+    {
+      "id": "node/4465621910",
+      "name": "Chase",
+      "kind": "bank",
+      "tags": {
+        "amenity": "bank",
+        "atm": "yes",
+        "brand": "Chase",
+        "drive_through": "no",
+        "opening_hours": "Mo-Fr 09:00-18:00; Sa 09:00-13:00",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "id": "node/2404211132",
+      "name": "Emergency Dental Care USA",
+      "kind": "dentist",
+      "tags": {
+        "amenity": "dentist",
+        "healthcare": "dentist"
+      }
+    },
+    {
+      "id": "node/2397460942",
+      "name": "Eclipse Hat Shop",
+      "kind": "clothes",
+      "tags": {
+        "clothes": "hats",
+        "shop": "clothes"
+      }
+    },
+    {
+      "id": "node/5150754654",
+      "name": "Farvahar Cafe",
+      "kind": "cafe",
+      "tags": {
+        "amenity": "cafe",
+        "cuisine": "persian",
+        "diet:vegetarian": "yes",
+        "takeaway": "yes"
+      }
+    },
+    {
+      "id": "node/2744017343",
+      "name": "Wells Fargo",
+      "kind": "atm",
+      "tags": {
+        "amenity": "atm",
+        "brand": "Wells Fargo",
+        "drive_through": "no",
+        "operator": "Wells Fargo"
+      }
+    },
+    {
+      "id": "node/4531038750",
+      "name": "Wells Fargo",
+      "kind": "bank",
+      "tags": {
+        "amenity": "bank",
+        "brand": "Wells Fargo",
+        "drive_through": "no"
+      }
+    },
+    {
+      "id": "node/4281319390",
+      "name": "West Edge Dental",
+      "kind": "dentist",
+      "tags": {
+        "amenity": "dentist",
+        "healthcare": "dentist"
+      }
+    },
+    {
+      "id": "node/5027183939",
+      "name": "Earth Wind and Fire",
+      "kind": "clothes",
+      "tags": {
+        "shop": "clothes"
+      }
+    },
+    {
+      "id": "node/2397497113",
+      "name": "Pike Place Chowder",
+      "kind": "cafe",
+      "tags": {
+        "amenity": "cafe",
+        "cuisine": "american",
+        "diet:vegetarian": "no",
+        "opening_hours": "Mo-Su 11:00-17:00",
+        "outdoor_seating": "yes",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "id": "node/3847955257",
+      "name": "Bank of America",
+      "kind": "atm",
+      "tags": {
+        "amenity": "atm",
+        "brand": "Bank of America",
+        "drive_through": "no",
+        "operator": "Bank of America"
+      }
+    },
+    {
+      "id": "node/4438089561",
+      "name": "Bank of America",
+      "kind": "bank",
+      "tags": {
+        "amenity": "bank",
+        "brand": "Bank of America",
+        "drive_through": "no",
+        "opening_hours": "Mo-Fr 09:00-18:00"
+      }
+    },
+    {
+      "id": "node/3996640537",
+      "name": "4th and Seneca Dental",
+      "kind": "dentist",
+      "tags": {
+        "amenity": "dentist",
+        "healthcare": "dentist"
+      }
+    },
+    {
+      "id": "node/2397481360",
+      "name": "Jackstraw",
+      "kind": "clothes",
+      "tags": {
+        "shop": "clothes"
+      }
+    },
+    {
+      "id": "node/2397497108",
+      "name": "Truffle Queen",
+      "kind": "cafe",
+      "tags": {
+        "amenity": "cafe",
+        "cuisine": "italian",
+        "internet_access": "wlan",
+        "opening_hours": "Mo-Su 10:00-18:00"
+      }
+    },
+    {
+      "id": "node/2744017258",
+      "name": "Chase",
+      "kind": "atm",
+      "tags": {
+        "amenity": "atm",
+        "brand": "Chase",
+        "operator": "Chase"
+      }
+    },
+    {
+      "id": "way/397023121",
+      "name": "KeyBank",
+      "kind": "bank",
+      "tags": {
+        "amenity": "bank",
+        "atm": "yes",
+        "brand": "KeyBank",
+        "opening_hours": "Mo-Fr 09:00-17:00"
+      }
+    },
+    {
+      "id": "node/10958551142",
+      "name": "Innovative Dentistry",
+      "kind": "dentist",
+      "tags": {
+        "amenity": "dentist",
+        "healthcare": "dentist",
+        "opening_hours": "Mo-Th 07:00-12:00,13:00-16:00"
+      }
+    },
+    {
+      "id": "node/2397493430",
+      "name": "Pendleton",
+      "kind": "clothes",
+      "tags": {
+        "opening_hours": "Mo-Su 11:00-18:00",
+        "shop": "clothes"
+      }
+    },
+    {
+      "id": "node/2169291669",
+      "name": "Hellenika Cultured Creamery",
+      "kind": "cafe",
+      "tags": {
+        "amenity": "cafe",
+        "cuisine": "gelato;frozen_yogurt",
+        "opening_hours": "Mo-Th 10:30-18:00; Fr-Su 10:30-18:30"
+      }
+    },
+    {
+      "id": "node/5208825714",
+      "name": "Sound Community Bank",
+      "kind": "atm",
+      "tags": {
+        "amenity": "atm"
+      }
+    },
+    {
+      "id": "node/2404231196",
+      "name": "WaFd Bank",
+      "kind": "bank",
+      "tags": {
+        "amenity": "bank",
+        "brand": "WaFd Bank"
+      }
+    },
+    {
+      "id": "node/13712982311",
+      "name": "Hasan Dbouk DDS",
+      "kind": "dentist",
+      "tags": {
+        "amenity": "dentist",
+        "healthcare": "dentist",
+        "healthcare:speciality": "dentist",
+        "mobile": "+1-206-467-8302"
+      }
+    },
+    {
+      "id": "node/2397481383",
+      "name": "Natural Home",
+      "kind": "clothes",
+      "tags": {
+        "brand": "The Futon Shop",
+        "shop": "clothes"
+      }
+    },
+    {
+      "id": "node/2397497102",
+      "name": "Copacabana",
+      "kind": "cafe",
+      "tags": {
+        "amenity": "cafe"
+      }
+    },
+    {
+      "id": "node/2744017402",
+      "name": "Cardtronics",
+      "kind": "atm",
+      "tags": {
+        "amenity": "atm",
+        "brand": "Cardtronics",
+        "operator": "Cardtronics"
+      }
+    },
+    {
+      "id": "node/5723976070",
+      "name": "Chase",
+      "kind": "bank",
+      "tags": {
+        "amenity": "bank",
+        "brand": "Chase"
+      }
+    },
+    {
+      "id": "node/2327732111",
+      "name": "Dentist Downtown Seattle",
+      "kind": "dentist",
+      "tags": {
+        "amenity": "dentist",
+        "healthcare": "dentist",
+        "wheelchair": "no"
+      }
+    },
+    {
+      "id": "node/2404247468",
+      "name": "Simple Life",
+      "kind": "clothes",
+      "tags": {
+        "opening_hours": "Mo-Su 10:00-18:00",
+        "shop": "clothes"
+      }
+    },
+    {
+      "id": "way/1256939013",
+      "name": "Boon Boona Coffee",
+      "kind": "cafe",
+      "tags": {
+        "amenity": "cafe",
+        "cuisine": "coffee_shop",
+        "opening_hours": "Mo-Su 08:00-18:00"
+      }
+    },
+    {
+      "id": "node/5599473323",
+      "name": "Union Bank",
+      "kind": "atm",
+      "tags": {
+        "amenity": "atm",
+        "brand": "Union Bank",
+        "operator": "Union Bank"
+      }
+    },
+    {
+      "id": "node/2404244807",
+      "name": "Bank of America",
+      "kind": "bank",
+      "tags": {
+        "amenity": "bank",
+        "brand": "Bank of America"
+      }
+    },
+    {
+      "id": "node/4639109912",
+      "name": "Leone Vaughn Davis Orthodonics",
+      "kind": "dentist",
+      "tags": {
+        "amenity": "dentist",
+        "healthcare": "dentist"
+      }
+    },
+    {
+      "id": "node/2397493561",
+      "name": "J & J Sportswear",
+      "kind": "clothes",
+      "tags": {
+        "shop": "clothes"
+      }
+    }
+  ],
+  "searchWish": "somewhere to sit with a hot coffee indoors",
+  "gameQuestion": "Is this place a cafe?",
+  "gameLabels": {
+    "node/2397461017": 1,
+    "node/1701242984": 0,
+    "node/2397493591": 0,
+    "node/2327716514": 0,
+    "node/2397461002": 0,
+    "node/2397461014": 1,
+    "node/2549172553": 0,
+    "node/11663016263": 0,
+    "node/4544123298": 0,
+    "node/4137555552": 0,
+    "node/2397497115": 1,
+    "node/3675688659": 0,
+    "node/3942806457": 0,
+    "node/12776982945": 0,
+    "node/2169291734": 0,
+    "node/2397497111": 1,
+    "node/3994235057": 0,
+    "node/4465621910": 0,
+    "node/2404211132": 0,
+    "node/2397460942": 0,
+    "node/5150754654": 1,
+    "node/2744017343": 0,
+    "node/4531038750": 0,
+    "node/4281319390": 0,
+    "node/5027183939": 0,
+    "node/2397497113": 1,
+    "node/3847955257": 0,
+    "node/4438089561": 0,
+    "node/3996640537": 0,
+    "node/2397481360": 0,
+    "node/2397497108": 1,
+    "node/2744017258": 0,
+    "way/397023121": 0,
+    "node/10958551142": 0,
+    "node/2397493430": 0,
+    "node/2169291669": 1,
+    "node/5208825714": 0,
+    "node/2404231196": 0,
+    "node/13712982311": 0,
+    "node/2397481383": 0,
+    "node/2397497102": 1,
+    "node/2744017402": 0,
+    "node/5723976070": 0,
+    "node/2327732111": 0,
+    "node/2404247468": 0,
+    "way/1256939013": 1,
+    "node/5599473323": 0,
+    "node/2404244807": 0,
+    "node/4639109912": 0,
+    "node/2397493561": 0
+  },
+  "qualityWish": "I want to sit indoors at a table and drink a hot coffee there. Takeaway without indoor seating will not work.",
+  "qualityPlaces": [
+    {
+      "id": "control_0",
+      "name": "Test location 1",
+      "tags": {
+        "amenity": "cafe",
+        "cuisine": "coffee_shop",
+        "indoor_seating": "yes",
+        "description": "Indoor tables and hot coffee are available to customers."
+      },
+      "expected": 1
+    },
+    {
+      "id": "control_1",
+      "name": "Test location 2",
+      "tags": {
+        "amenity": "atm",
+        "description": "Cash machine only. No food, drinks or seating."
+      },
+      "expected": 0
+    },
+    {
+      "id": "control_2",
+      "name": "Test location 3",
+      "tags": {
+        "amenity": "cafe",
+        "takeaway": "only",
+        "indoor_seating": "no",
+        "description": "Takeaway coffee window. No indoor access or seating."
+      },
+      "expected": 0
+    },
+    {
+      "id": "control_3",
+      "name": "Test location 4",
+      "tags": {
+        "shop": "clothes",
+        "description": "Sells clothing only. No cafe, coffee service or customer seating."
+      },
+      "expected": 0
+    },
+    {
+      "id": "control_4",
+      "name": "Test location 5",
+      "tags": {
+        "amenity": "cafe",
+        "cuisine": "coffee_shop",
+        "indoor_seating": "yes",
+        "description": "Indoor tables and hot coffee are available to customers."
+      },
+      "expected": 1
+    },
+    {
+      "id": "control_5",
+      "name": "Test location 6",
+      "tags": {
+        "amenity": "atm",
+        "description": "Cash machine only. No food, drinks or seating."
+      },
+      "expected": 0
+    },
+    {
+      "id": "control_6",
+      "name": "Test location 7",
+      "tags": {
+        "amenity": "cafe",
+        "takeaway": "only",
+        "indoor_seating": "no",
+        "description": "Takeaway coffee window. No indoor access or seating."
+      },
+      "expected": 0
+    },
+    {
+      "id": "control_7",
+      "name": "Test location 8",
+      "tags": {
+        "shop": "clothes",
+        "description": "Sells clothing only. No cafe, coffee service or customer seating."
+      },
+      "expected": 0
+    },
+    {
+      "id": "control_8",
+      "name": "Test location 9",
+      "tags": {
+        "amenity": "cafe",
+        "cuisine": "coffee_shop",
+        "indoor_seating": "yes",
+        "description": "Indoor tables and hot coffee are available to customers."
+      },
+      "expected": 1
+    },
+    {
+      "id": "control_9",
+      "name": "Test location 10",
+      "tags": {
+        "amenity": "atm",
+        "description": "Cash machine only. No food, drinks or seating."
+      },
+      "expected": 0
+    },
+    {
+      "id": "control_10",
+      "name": "Test location 11",
+      "tags": {
+        "amenity": "cafe",
+        "takeaway": "only",
+        "indoor_seating": "no",
+        "description": "Takeaway coffee window. No indoor access or seating."
+      },
+      "expected": 0
+    },
+    {
+      "id": "control_11",
+      "name": "Test location 12",
+      "tags": {
+        "shop": "clothes",
+        "description": "Sells clothing only. No cafe, coffee service or customer seating."
+      },
+      "expected": 0
+    },
+    {
+      "id": "control_12",
+      "name": "Test location 13",
+      "tags": {
+        "amenity": "cafe",
+        "cuisine": "coffee_shop",
+        "indoor_seating": "yes",
+        "description": "Indoor tables and hot coffee are available to customers."
+      },
+      "expected": 1
+    },
+    {
+      "id": "control_13",
+      "name": "Test location 14",
+      "tags": {
+        "amenity": "atm",
+        "description": "Cash machine only. No food, drinks or seating."
+      },
+      "expected": 0
+    },
+    {
+      "id": "control_14",
+      "name": "Test location 15",
+      "tags": {
+        "amenity": "cafe",
+        "takeaway": "only",
+        "indoor_seating": "no",
+        "description": "Takeaway coffee window. No indoor access or seating."
+      },
+      "expected": 0
+    },
+    {
+      "id": "control_15",
+      "name": "Test location 16",
+      "tags": {
+        "shop": "clothes",
+        "description": "Sells clothing only. No cafe, coffee service or customer seating."
+      },
+      "expected": 0
+    }
+  ],
+  "askableCases": [
+    {
+      "question": "Is this place a cafe?",
+      "expected": 1
+    },
+    {
+      "question": "Does it sell books?",
+      "expected": 1
+    },
+    {
+      "question": "Can I sit indoors here?",
+      "expected": 1
+    },
+    {
+      "question": "What is the weather forecast tomorrow?",
+      "expected": 0
+    },
+    {
+      "question": "Tell me a long story about dragons.",
+      "expected": 0
+    },
+    {
+      "question": "Which of these places is the best?",
+      "expected": 0
+    },
+    {
+      "question": "Is it a restaurant?",
+      "expected": 1
+    },
+    {
+      "question": "Can I buy bread there?",
+      "expected": 1
+    },
+    {
+      "question": "Does it have outdoor seating?",
+      "expected": 1
+    },
+    {
+      "question": "Is this a bank?",
+      "expected": 1
+    },
+    {
+      "question": "Are dogs allowed here?",
+      "expected": 1
+    },
+    {
+      "question": "Is this place wheelchair accessible?",
+      "expected": 1
+    },
+    {
+      "question": "List all the cafes.",
+      "expected": 0
+    },
+    {
+      "question": "Where should I go for coffee?",
+      "expected": 0
+    },
+    {
+      "question": "Why is this place popular?",
+      "expected": 0
+    },
+    {
+      "question": "How many cafes are here?",
+      "expected": 0
+    },
+    {
+      "question": "Move the map north.",
+      "expected": 0
+    },
+    {
+      "question": "Hello, how are you?",
+      "expected": 0
+    }
+  ]
+}

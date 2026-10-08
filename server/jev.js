@@ -2,17 +2,18 @@
 // text. Two providers answer the same /v1/systemone contract, chosen by JEV_PROVIDER in .env:
 //
 //   jev     hosted TypeSafe Jev (jev-latest) via the official SDK. Needs TYPESAFE_API_KEY.
-//   shingi  self-hosted Shingi 27B (Shingi is the same engine family, served locally on the
-//           smarty RTX 4090). POSTs {model, state, questions} to SHINGI_URL/v1/systemone, no key.
+//   shingi  self-hosted Shingi 27B, served locally on the smarty RTX 4090.
+//           POSTs {model, state, questions} to SHINGI_URL/v1/systemone, no key.
 //
 // Both providers return the same answer shapes (`{type:"noul",noul}` / `{type:"choice",choice,
-// confidence,probabilities}`), so pipeline.js and game.js do not care which one is answering.
-// Shingi is not calibrated like Jev: probabilities are raw model scores, so treat them as
-// evidence, not as poster-grade percentages.
+// confidence,probabilities}`); pipeline.js and game.js choose batching for the provider.
+// Shingi's deployed calibration is reported by /v1/version. The current identity
+// calibration has not been validated for mappity's different question roles.
 
 import { TypeSafeClient } from "@typesafe-ai/sdk";
 
 const PROVIDER = (process.env.JEV_PROVIDER || "jev").trim().toLowerCase();
+export const provider = PROVIDER;
 
 // What a token costs, per provider: the hosted Jev bills $0.042 per million input tokens
 // (output free); the local Shingi is flat-rate electricity, so its bill is always $0.00 —
@@ -45,14 +46,15 @@ function shingiClient() {
   const model = (process.env.SHINGI_MODEL || "shingi-27b").trim();
   const url = `${base}/v1/systemone`;
   return {
-    // One worker on the 4090, so there is nothing to retry through: a busy engine is a slow
-    // engine, and hammering it only makes the map slower for everyone else on this box.
+    // Avoid automatic retries: the current worker serializes inference, and a timed-out
+    // request can still be running. Bound the client wait without submitting it twice.
     async ask(state, questions) {
       const started = performance.now();
       const response = await fetch(url, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ model, state, questions }),
+        signal: AbortSignal.timeout(120000),
       });
       if (!response.ok) throw new Error(`shingi ${response.status} ${await response.text().catch(() => "")}`.slice(0, 300));
       const result = await response.json();
