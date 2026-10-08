@@ -36,6 +36,46 @@ visible together, so its outputs need not equal those of another configuration. 
 alone does not guarantee equal semantics. These are diagnostics, not a representative calibration
 corpus or evidence of general accuracy. The data retain OpenStreetMap attribution and ODbL terms.
 
+## Parallel production engine and client, 2026-10-08
+
+Production Shingi now uses [engine `b2e1393`](https://github.com/kortexa-ai/shingi-27b/commit/b2e1393322bab9e459ca3df6a5e744a3a5748a0d),
+deployed through models.server `b2f7723` on the RTX 4090. Weights, identity calibration
+and Prism runtime are unchanged. Mappity keeps one place per request and admits four
+requests at a time. Results retain their input order. A failed request stops new work;
+already-started requests finish before the error is returned. Invalid game questions
+still stop at the separate validity gate.
+
+The comparison used actual local `/api/ask`, `/api/game/start` and `/api/game/ask`
+endpoints against production Shingi. The serial client was Mappity `67eb987`.
+Six runs used the order serial, parallel, parallel, serial, serial, parallel. Each
+isolated application used the same frozen OSM tile values, with cache timestamps
+refreshed to prevent a network refresh. The wish and Pike Place viewport match the
+October 7 run. Full application events, inputs, outputs and source hashes were retained.
+
+| Workload | Serial client: median (range), 3 runs | Four-request client: median (range), 3 runs |
+|---|---:|---:|
+| Search: 693 places, 425 judgments | 41.87 s (41.47–42.44) | 33.90 s (33.87–34.12) |
+| Game: 60 candidates plus validity gate | 7.09 s (7.07–7.25) | 5.49 s (5.46–5.53) |
+| Invalid game question: rejected by the gate | 0.098 s (0.093–0.101) | 0.103 s (0.102–0.105) |
+
+Search used 19.0% less time; the valid game question used 22.5% less time. Every search
+made the same 303 model requests and counted 66,717 logical input tokens. All 300
+fine-pass place IDs matched. The coarse pass still took about 5.3 seconds. The earlier
+40.73-second Shingi search is one observation on the previous engine, not a fresh
+paired baseline for this table.
+
+The serial scores were identical across runs. Parallel batching changed search
+probabilities by a mean absolute 0.00192–0.00249, with a maximum change of 0.01758.
+Two near-0.5 scores crossed that threshold in two of the three parallel runs; the
+top ten retained nine of the serial top ten in every parallel run. Search has no
+gold labels, so this does not establish equivalent ranking quality or calibration.
+All 16 explicit-fact controls passed with both one and four clients, and all game
+odds were finite and normalized. The 22 application tests passed, including bounded
+concurrency, result order, failure draining, the real HTTP game path and early rejection.
+
+Frozen OSM cache SHA-256: `e7ba6c56dd0b1a3adc44c5d30194cad887f9dca105e1ace858a1fa48e5aebd86`.
+Engine correctness and memory measurements are in the [Shingi report](https://github.com/kortexa-ai/shingi-27b/blob/main/results/parallel-decisions/REPORT.md).
+
 ## Measured on Smarty's RTX 4090, 2026-10-07
 
 Shingi 27B v3.2 weights `c62ae5b6…`, identity calibration, Prism runtime `d8f26eec…`.
@@ -57,7 +97,7 @@ sample. The hosted Jev path keeps its original parallel batches. This choice doe
 universal optimal batch size for Shingi or change its calibration.
 
 Eight short requests took 0.76–0.82 s serial and 0.79–0.80 s with four concurrent clients. The
-current native worker still serializes inference. These measurements do not answer how many
+then-deployed native worker serialized inference. These measurements do not answer how many
 sequences could share model weights in a different serving implementation.
 
 The old question-validity prompt accepted "Which of these places is the best?" (0.51). Adding
@@ -79,14 +119,14 @@ pass. These are single end-to-end observations, separate from the repeated fixed
 
 The Shingi search was 3.65 times faster, with the same number of judgments. Its fine pass now
 streams individual results as they arrive. It still takes tens of seconds for 300 places on the
-current serial worker; reducing each request's context does not create parallel inference.
+then-deployed serial worker; reducing each request's context did not create parallel inference.
 Different context composition changes scores, so equal judgment counts do not prove equivalent
 search quality. The Jev run verifies its retained hosted path, not a controlled model comparison.
 
 ## What prefix reuse does
 
-Prefix reuse is already enabled. The native engine snapshots complete 512-token prefix blocks,
-restores that sequence for each question, and evaluates the remaining prefix and question tokens.
+Prefix reuse was already enabled in the original worker. It snapshots complete 512-token prefix
+blocks, restores that sequence for each question, and evaluates the remaining prefix and question tokens.
 A short prefix with no complete block has nothing to cache. Logical `usage.input_tokens` counts
 each full prompt, including reused text; it is not executed-prefill work.
 

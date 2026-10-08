@@ -11,16 +11,20 @@ const exec = promisify(execFile);
 
 async function play(t, provider, valid) {
   const calls = [];
+  let active = 0, peak = 0;
   const judge = createServer(async (req, res) => {
     let body = "";
     for await (const chunk of req) body += chunk;
     const parsed = JSON.parse(body);
     calls.push(parsed);
+    peak = Math.max(peak, ++active);
+    await new Promise((resolve) => setTimeout(resolve, 30));
     const answers = Object.fromEntries(Object.keys(parsed.questions).map((k) => [k, {
       type: "noul", noul: k === "askable" ? (valid ? 0.99 : 0.01) : 0.9,
     }]));
     res.setHeader("content-type", "application/json");
     res.end(JSON.stringify({ model: "shingi-27b", answers, usage: { input_tokens: 100, output_tokens: 0 } }));
+    active--;
   });
   await new Promise((resolve) => judge.listen(0, "127.0.0.1", resolve));
   t.after(() => { judge.closeAllConnections(); judge.close(); });
@@ -43,7 +47,7 @@ async function play(t, provider, valid) {
     PATH: process.env.PATH, JEV_PROVIDER: provider, SHINGI_URL: base,
     TYPESAFE_BASE_URL: base, TYPESAFE_API_KEY: "test-key",
   } });
-  return { calls, result: JSON.parse(stdout) };
+  return { calls, result: JSON.parse(stdout), peak };
 }
 
 test("Shingi rejects an invalid game question before asking about any place", async (t) => {
@@ -57,8 +61,9 @@ test("Shingi rejects an invalid game question before asking about any place", as
 });
 
 test("Shingi bills the separate validity check and each isolated place", async (t) => {
-  const { calls, result } = await play(t, "shingi", true);
+  const { calls, result, peak } = await play(t, "shingi", true);
   assert.equal(calls.length, 9);
+  assert.equal(peak, 4);
   for (const call of calls.slice(1)) assert.equal(Object.keys(call.state.places).length, 1);
   assert.equal(result.requests, 9);
   assert.equal(result.judgments, 9);

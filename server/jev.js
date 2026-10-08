@@ -46,8 +46,8 @@ function shingiClient() {
   const model = (process.env.SHINGI_MODEL || "shingi-27b").trim();
   const url = `${base}/v1/systemone`;
   return {
-    // Avoid automatic retries: the current worker serializes inference, and a timed-out
-    // request can still be running. Bound the client wait without submitting it twice.
+    // A timed-out request can still be running. Bound the client wait without
+    // automatic retries that could submit the same inference twice.
     async ask(state, questions) {
       const started = performance.now();
       const response = await fetch(url, {

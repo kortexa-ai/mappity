@@ -51,7 +51,7 @@ export async function ask(id, question) {
     // Keyed, not an array: Jev miscounts long arrays (measured in pipeline.js).
     const { state, questions } = gameRequest(question, batch, !local && b === 0);
     return jev.ask(state, questions);
-  }, local);
+  }, local ? 4 : Infinity);
 
   const billed = gate ? [gate, ...results] : results;
   const tokens = billed.reduce((sum, r) => sum + r.tokens, 0);

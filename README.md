@@ -35,7 +35,7 @@ to Ballard".
 | | Does | Cannot |
 |---|---|---|
 | **[Cactus Needle](https://github.com/kortexa-ai/needle.server/blob/main/llms.txt)** (local, ~50 ms) | Pulls open-valued arguments out of a sentence: `search_near("aquarium", 5)` | Judge anything. It turned "needs sugar" into `go_to("sugar")` at confidence 1.00 |
-| **The judge** (hosted [TypeSafe Jev](https://docs.typesafe.ai) by default, or a self-hosted [Shingi 27B](https://github.com/kortexa-ai/shingi-27b) via `JEV_PROVIDER=shingi`) | Answers typed questions with probabilities. Jev supports wide parallel batches; mappity gives the current Shingi worker one place at a time. Shingi's calibration is not validated for this app | Write text, count, do arithmetic, compare dates |
+| **The judge** (hosted [TypeSafe Jev](https://docs.typesafe.ai) by default, or a self-hosted [Shingi 27B](https://github.com/kortexa-ai/shingi-27b) via `JEV_PROVIDER=shingi`) | Answers typed questions with probabilities. Jev supports wide parallel batches; mappity keeps one place per Shingi request and runs up to four requests together. Shingi's calibration is not validated for this app | Write text, count, do arithmetic, compare dates |
 | **Code** | Geocoding, walking distance, fetching, combining scores | Understand what "cozy" means |
 
 One question travels like this (`server/pipeline.js`):
@@ -47,7 +47,7 @@ One question travels like this (`server/pipeline.js`):
 4. **Code** fetches the places from OpenStreetMap (Overpass), and, when the street matters, what
    Mapillary's cameras saw within 50 m of each place: street lights, benches, crossings, cameras.
 5. **The judge** judges place *types* first, in one request, so that only plausible places get their own question.
-6. **The judge** scores up to 300 places: parallel batches for Jev, one place per serial request for
+6. **The judge** scores up to 300 places: parallel batches for Jev, up to four concurrent one-place requests for
    Shingi. When the street matters each place gets two narrow questions, the place and its street,
    and code takes their geometric mean.
 7. **The judge** picks, for the best matches, the one known fact that explains the match. It cannot write a

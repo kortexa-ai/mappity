@@ -53,12 +53,24 @@ export const askableQuestion = () => noul(
   "An open-ended question, a request to pick or list places, a command, or an unrelated topic",
 );
 
-/** Keep local batches bounded; hosted batches retain their parallel fan-out. */
-export async function mapBatches(items, size, run, serial = false) {
+/** Bound local concurrency; keep each result at its original batch index. */
+export async function mapBatches(items, size, run, concurrency = Infinity) {
   const batches = [];
   for (let i = 0; i < items.length; i += size) batches.push(items.slice(i, i + size));
-  if (!serial) return Promise.all(batches.map(run));
-  const results = [];
-  for (const [i, batch] of batches.entries()) results.push(await run(batch, i));
+  const results = new Array(batches.length);
+  let next = 0, failed = false, failure;
+  await Promise.all(Array.from({ length: Math.min(concurrency, batches.length) }, async () => {
+    while (!failed && next < batches.length) {
+      const i = next++;
+      try {
+        results[i] = await run(batches[i], i);
+      } catch (error) {
+        // Stop admission, then drain the other in-flight requests before reporting failure.
+        if (!failed) failure = error;
+        failed = true;
+      }
+    }
+  }));
+  if (failed) throw failure;
   return results;
 }
