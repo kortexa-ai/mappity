@@ -13,7 +13,7 @@ Jev, or self-hosted Shingi 27B via `JEV_PROVIDER` in `.env`) and Cactus Needle.
 - Web client: MapLibre GL on OpenFreeMap's dark style, no build step.
 - Provider switch: `JEV_PROVIDER=jev|shingi` in `.env`; Shingi answers the same `/v1/systemone`
   contract, locally on one RTX 4090. Place judgments use isolated place contexts and
-  serial requests; the game checks question validity before judging places. Hosted
+  up to four concurrent requests; the game checks question validity before judging places. Hosted
   Jev retains its parallel batches.
 
 ## Next, if this goes anywhere
@@ -36,8 +36,8 @@ Jev, or self-hosted Shingi 27B via `JEV_PROVIDER` in `.env`) and Cactus Needle.
 - Street context says "none seen" both for empty streets and for streets no one has photographed.
 - English only. The judging model's other languages are weaker, and Needle's tool descriptions are
   English.
-- Shingi's current native worker serializes inference. Prefix reuse is enabled, but sequence
-  restoration and the remaining question evaluation still cost time. Larger shared place
-  contexts can change answers as well as latency. The fixed-workload checks in
-  `experiments/shingi-performance.mjs` cover both; shared-weight parallel serving remains
-  separate engine work, not a property of the current HTTP client.
+- Shingi serves four sequences with shared weights. Prefix snapshots for later requests
+  still cross host RAM; a shared prefix stays on the GPU within a question exchange.
+  Larger shared place contexts can change answers as well as latency. Eight concurrent
+  client requests filled batches better but were slightly slower than four in the full
+  application. See `experiments/README.md` for the measurements and limitations.

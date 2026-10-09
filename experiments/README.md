@@ -36,7 +36,78 @@ visible together, so its outputs need not equal those of another configuration. 
 alone does not guarantee equal semantics. These are diagnostics, not a representative calibration
 corpus or evidence of general accuracy. The data retain OpenStreetMap attribution and ODbL terms.
 
-## Parallel production engine and client, 2026-10-08
+## NVML and resident-prefix update, 2026-10-08
+
+Production now runs [Shingi `2f7acfd`](https://github.com/kortexa-ai/shingi-27b/commit/2f7acfd151cae57f15fe4f52b2c2d3b20e3090e6),
+deployed through models.server `94ae8f4`. The worker reads fresh free memory with
+NVML instead of launching `nvidia-smi` for each batch. Decode timings include GPU
+completion. A sole shared prefix stays on the GPU between question waves.
+Weights, calibration, the four-sequence limit and context capacity are unchanged.
+
+Mappity retains four concurrent one-place requests. An eight-caller experiment filled
+the engine's batches more consistently and improved its small HTTP benchmark, but
+was slightly slower in the full application. The final app code keeps the existing
+four-caller limit, place isolation, result order, failure draining and validity gate.
+
+Six actual application runs used caller counts 4, 8, 8, 4, 4, 8. The test used the
+same frozen OSM values, refreshed cache timestamps, wish and viewport as the earlier
+comparison. Each search saw 693 places, made 425 judgments through 303 model requests,
+and counted 66,717 logical input tokens. All 300 fine-pass place IDs matched.
+
+| Workload | Four callers: median (range), 3 runs | Eight callers: median (range), 3 runs |
+|---|---:|---:|
+| Search | 28.92 s (28.90–29.05) | 29.41 s (29.37–29.51) |
+| Game: 60 candidates plus validity gate | 4.48 s (4.46–4.49) | 4.59 s (4.57–4.60) |
+| Invalid game question: rejected by the gate | 0.068 s (0.068–0.069) | 0.069 s (0.068–0.070) |
+
+A fresh pre-update observation with four callers took 34.27 s for search and 5.52 s
+for the game. The new medians use 15.6% and 18.8% less time. The old engine was measured
+once in this comparison; the first parallel release's repeated baseline below is separate.
+The coarse pass still takes about 5.3 s. Full batch occupancy alone does not establish
+better throughput; the cause of the eight-caller app regression has not been profiled.
+
+Against that pre-update four-caller observation, the three retained four-caller runs
+changed search probabilities by mean absolute 0.00225–0.00243, with maximum 0.01406.
+Each had one near-0.5 threshold crossing and retained nine of the old top ten.
+Search has no gold labels, so this does not establish equivalent ranking quality or
+calibration. All 16 explicit-fact controls passed at one, four and eight callers.
+All game odds were finite and normalized, invalid questions stopped at the gate,
+and the 22 application tests passed.
+
+The frozen OSM SHA-256 remains `e7ba6c56dd0b1a3adc44c5d30194cad887f9dca105e1ace858a1fa48e5aebd86`.
+Complete application events, source hashes, control requests and answers are retained
+in the work-unit evidence. [Engine validation](https://github.com/kortexa-ai/shingi-27b/blob/main/results/throughput/REPORT.md)
+covers 291 paired distribution comparisons, native timing accounting and VRAM use.
+
+### Larger shared contexts after the engine fixes
+
+The same 50-place search request bodies from October 7 were repeated on the new engine:
+
+| Context | October 7 engine, two observations | New engine, two observations |
+|---|---:|---:|
+| One place, serial HTTP requests | 5.55 / 5.46 s | 4.13 / 4.26 s |
+| All 50 places, one request | 18.53 / 17.83 s | 4.30 / 3.63 s |
+
+The second 50-place request immediately repeats the same prefix. A stable order permits
+reuse, but does not remove suffix evaluation or the remaining host restore. The old
+large-context penalty is mostly gone after parallel serving and prefix-residency fixes;
+these observations do not separate each change's contribution. The one-place rows
+are sequential diagnostics, not the concurrent full application above.
+
+The quality control still had 0/16 errors with isolated places and 6/16 with all
+16 places in one context. This is why Mappity retains place isolation. Search request
+bodies matched the old experiment exactly. The whole fixture SHA differs because
+question-validity cases were expanded; the search payloads did not change.
+
+Cross-request cache snapshots still move through host RAM. The pinned Prism CUDA
+path performs device-to-host saves and host-to-device restores, synchronizing each
+tensor copy. In the engine's separate eight-question control, two restores of the
+same 184 MiB snapshot cost 480.55 ms of 672.25 ms before the fix. The new path needs
+one 240.26 ms restore and takes 430.28 ms total. These values include transfer and
+synchronization costs; they do not isolate DDR4 or PCIe bandwidth. See the engine
+report for exact source links and the on-device snapshot API's ownership restriction.
+
+## First parallel production engine and client, 2026-10-08
 
 Production Shingi now uses [engine `b2e1393`](https://github.com/kortexa-ai/shingi-27b/commit/b2e1393322bab9e459ca3df6a5e744a3a5748a0d),
 deployed through models.server `b2f7723` on the RTX 4090. Weights, identity calibration
