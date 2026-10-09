@@ -36,9 +36,92 @@ visible together, so its outputs need not equal those of another configuration. 
 alone does not guarantee equal semantics. These are diagnostics, not a representative calibration
 corpus or evidence of general accuracy. The data retain OpenStreetMap attribution and ODbL terms.
 
+## Full application benchmark
+
+`shingi-app-performance.py` runs the actual search and game endpoints against an
+externally managed Shingi service. It makes temporary application copies, changes
+only their caller limit, and alternates caller order each round. It records source
+hashes, complete events, scores, normalized game odds, cache counters and model
+version. It does not manage GPUs or services.
+
+```sh
+python3 experiments/shingi-app-performance.py --shingi-url http://localhost:8765 \
+  --cache-file /path/to/frozen-osm-cache.json --callers 4,8 --rounds 3 \
+  --out /path/to/new-results
+```
+
+The frozen cache file maps application cache filenames to their JSON `value`
+objects. It must cover the fixed Pike Place viewport in the script. The script
+refreshes timestamps in its temporary copies and requires a cache hit, 693 input
+places in the measured fixture, 300 fine-pass scores and 60 game candidates.
+The first request includes cold model caches; later requests can reuse them.
+Keep that order when comparing cache policies. The script reads the local `.env`
+for application dependencies without copying credentials into its output.
+
+## VRAM cache and bounded tail padding, 2026-10-08
+
+The engine now keeps bounded prefix snapshots on the GPU by default, with an
+explicit host mode and off mode. It also uses 1024-token parallel batches and
+bounded discarded tails to reduce small remainder calls. Model weights and
+calibration are unchanged. Mappity adopts eight requests in flight after the
+same four-versus-eight comparison favored eight on both cards. Each place
+still has its own prompt; the game's validity check still runs first.
+
+The actual endpoint comparison used caller order 4, 8, 8, 4, 4, 8 with the same
+frozen OSM values as the previous release. Every search saw 693 places and made
+425 judgments through 303 model requests, counting 66,717 logical input tokens.
+The fine pass returned the same 300 place IDs. The game used 60 candidates.
+
+| GPU and callers, 1 GiB VRAM cache | Search median (range), 3 runs | Game median (range), 3 runs |
+|---|---:|---:|
+| RTX 4090, 4 | 26.23 s (26.15–26.36) | 4.20 s (4.20–4.28) |
+| RTX 4090, 8 | 25.95 s (25.92–26.03) | 4.14 s (4.13–4.16) |
+| RTX PRO 6000, 4 | 23.56 s (22.55–23.56) | 3.73 s (3.60–3.81) |
+| RTX PRO 6000, 8 | 23.00 s (22.67–23.36) | 3.60 s (3.54–3.66) |
+
+The earlier production 4090 measurements were 28.92 s/search and 4.48 s/game
+with four callers. The new medians use about 10.3% and 7.5% less time. That
+comparison includes both engine and client changes and is not simultaneous.
+Eight callers are only slightly faster than four on this engine; the result
+is workload-specific. Jev's earlier 0.81 s/search observation is a separate
+hosted-provider measurement, not a new paired baseline.
+
+On the final 4090 engine, explicit host mode at eight callers measured
+27.23 s/search and 4.05 s/game. VRAM mode reduced the coarse search pass from
+about 4.72 s to 3.89 s. It did not improve the independent game requests.
+The cache-only 6000 sweep found no benefit from growing the cache from 1 GiB
+to 4 GiB. One GiB held all three reusable application prefixes (476 MiB charged),
+with nine repeat hits and no eviction after the first three misses. A 256 MiB
+budget held one state and repeatedly evicted it. Most fine-pass requests are
+single questions with independent places and bypass the exact-prefix cache.
+A RAM secondary tier would not remove that computation.
+
+All 16 explicit place-fact controls and all 18 question-validity controls passed
+on the 4090 in both host and VRAM modes. The final 6000 check passed the same
+16 place-fact and 18 validity controls. Every game probability was finite and
+normalized; invalid questions stopped after one judgment. Against the first
+same-engine host run, the three adopted eight-caller VRAM runs had mean absolute
+score changes of 0.00217–0.00230 and maximum 0.01360. Each had one near-0.5
+crossing and retained nine or ten of the baseline top ten. Search has no gold
+labels, so this does not establish equal ranking quality or calibration.
+
+The engine's separate shared-prefix test improved a warm eight-question request
+from 430 ms with host snapshots to 150 ms with device snapshots on the 4090.
+Its state restoration fell from 240 ms to 1.87 ms. The 4090's PCIe link remained
+at Gen 1 x4 under load; hardware settings were not changed. These are engine
+controls, not a 129-fold application speedup. See the [engine report](https://github.com/kortexa-ai/shingi-27b/blob/main/results/vram-cache/REPORT.md)
+for the Prism quantized-state correction, memory accounting, fixture checks and
+matched transfer measurements.
+
+The 22 application tests pass, including the real HTTP game path with more
+places than the eight-caller limit. Complete inputs, source hashes, events,
+answers and service records are retained under
+`~/Desktop/ai reports/shingi-vram-cache-2026-10-08/`. The frozen OSM SHA-256 is
+`e7ba6c56dd0b1a3adc44c5d30194cad887f9dca105e1ace858a1fa48e5aebd86`.
+
 ## NVML and resident-prefix update, 2026-10-08
 
-Production now runs [Shingi `2f7acfd`](https://github.com/kortexa-ai/shingi-27b/commit/2f7acfd151cae57f15fe4f52b2c2d3b20e3090e6),
+At this stage, production ran [Shingi `2f7acfd`](https://github.com/kortexa-ai/shingi-27b/commit/2f7acfd151cae57f15fe4f52b2c2d3b20e3090e6),
 deployed through models.server `94ae8f4`. The worker reads fresh free memory with
 NVML instead of launching `nvidia-smi` for each batch. Decode timings include GPU
 completion. A sole shared prefix stays on the GPU between question waves.
@@ -109,7 +192,7 @@ report for exact source links and the on-device snapshot API's ownership restric
 
 ## First parallel production engine and client, 2026-10-08
 
-Production Shingi now uses [engine `b2e1393`](https://github.com/kortexa-ai/shingi-27b/commit/b2e1393322bab9e459ca3df6a5e744a3a5748a0d),
+The first parallel release used [engine `b2e1393`](https://github.com/kortexa-ai/shingi-27b/commit/b2e1393322bab9e459ca3df6a5e744a3a5748a0d),
 deployed through models.server `b2f7723` on the RTX 4090. Weights, identity calibration
 and Prism runtime are unchanged. Mappity keeps one place per request and admits four
 requests at a time. Results retain their input order. A failed request stops new work;
@@ -194,7 +277,7 @@ then-deployed serial worker; reducing each request's context did not create para
 Different context composition changes scores, so equal judgment counts do not prove equivalent
 search quality. The Jev run verifies its retained hosted path, not a controlled model comparison.
 
-## What prefix reuse does
+## Original host snapshot behavior
 
 Prefix reuse was already enabled in the original worker. It snapshots complete 512-token prefix
 blocks, restores that sequence for each question, and evaluates the remaining prefix and question tokens.

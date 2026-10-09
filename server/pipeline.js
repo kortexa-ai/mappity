@@ -146,7 +146,7 @@ async function judgePlaces(wish, places, contexts, emit) {
     });
     emit({ step: "judge", ms: performance.now() - started, requestMs: asked.ms, tokens: asked.tokens, usd: asked.usd, scores, questions: Object.keys(questions).length });
     return { scores, usage: asked, questions: Object.keys(questions).length };
-  }, jev.provider === "shingi" ? 4 : Infinity);
+  }, jev.provider === "shingi" ? 8 : Infinity);
 }
 
 /** Jev cannot write a reason, but it can select one: which known fact best explains the match? */

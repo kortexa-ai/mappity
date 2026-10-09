@@ -35,7 +35,7 @@ async function play(t, provider, valid) {
   await symlink(new URL("../node_modules", import.meta.url).pathname, join(cwd, "node_modules"), "dir");
   for (const file of ["game.js", "jev.js", "judge-batches.js", "geo.js"]) await copyFile(new URL(`../server/${file}`, import.meta.url), join(cwd, file));
   await writeFile(join(cwd, "osm.js"), `
-    const places = Array.from({length:8}, (_,i) => ({id:String(i),name:'Cafe '+i,kind:'cafe',tags:{amenity:'cafe',cuisine:'coffee',indoor_seating:'yes'},lng:0,lat:0,metres:i}));
+    const places = Array.from({length:12}, (_,i) => ({id:String(i),name:'Cafe '+i,kind:'cafe',tags:{amenity:'cafe',cuisine:'coffee',indoor_seating:'yes'},lng:0,lat:0,metres:i}));
     export const nearest = (p) => p;
     export const placesIn = async () => ({value:places});
   `);
@@ -62,22 +62,22 @@ test("Shingi rejects an invalid game question before asking about any place", as
 
 test("Shingi bills the separate validity check and each isolated place", async (t) => {
   const { calls, result, peak } = await play(t, "shingi", true);
-  assert.equal(calls.length, 9);
-  assert.equal(peak, 4);
+  assert.equal(calls.length, 13);
+  assert.equal(peak, 8);
   for (const call of calls.slice(1)) assert.equal(Object.keys(call.state.places).length, 1);
-  assert.equal(result.requests, 9);
-  assert.equal(result.judgments, 9);
-  assert.equal(result.tokens, 900);
+  assert.equal(result.requests, 13);
+  assert.equal(result.judgments, 13);
+  assert.equal(result.tokens, 1300);
   assert.equal(result.usd, 0);
-  assert.equal(result.odds.length, 8);
+  assert.equal(result.odds.length, 12);
   assert.equal(result.asked, 1);
 });
 
 test("Jev retains its single game batch and speculative validity check", async (t) => {
   const { calls, result } = await play(t, "jev", true);
   assert.equal(calls.length, 1);
-  assert.equal(Object.keys(calls[0].state.places).length, 8);
-  assert.equal(Object.keys(calls[0].questions).length, 9);
+  assert.equal(Object.keys(calls[0].state.places).length, 12);
+  assert.equal(Object.keys(calls[0].questions).length, 13);
   assert.equal(result.requests, 1);
   assert.equal(result.tokens, 100);
   assert.ok(result.usd > 0);
